@@ -1,10 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+
 import LatestJobCards from "./LatestJobCards";
 import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 
 const LatestJobs = () => {
   const { allJobs } = useSelector((store) => store.job);
+  const navigate = useNavigate();
+
 
   return (
     <section className="py-20 px-4 bg-gray-50">
@@ -63,7 +67,9 @@ const LatestJobs = () => {
             className="text-center mt-16"
           >
             <button
-              onClick={() => (window.location.href = "/jobs")}
+              // onClick={() => (window.location.href = "/jobs")}
+              onClick={() => navigate("/jobs")}
+
               className="px-10 py-5 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold text-lg rounded-full shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
             >
               View All Jobs →
