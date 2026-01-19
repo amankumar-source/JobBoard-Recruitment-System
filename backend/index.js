@@ -25,7 +25,7 @@ const corsOptions = {
     "http://localhost:5173",
     "https://job-board-recruitment-system.vercel.app"
   ],
-  
+  origin:true,
   credentials: true,
 };
 
