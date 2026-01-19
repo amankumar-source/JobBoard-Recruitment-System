@@ -13,11 +13,16 @@ import { setLoading, setUser } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
 
 const Login = () => {
+  // ✅ Validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const [input, setInput] = useState({
     email: "",
     password: "",
     role: "",
   });
+  const [errors, setErrors] = useState({});
+
   const { loading, user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -26,9 +31,49 @@ const Login = () => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
+
+
+
+
+
+
+
+
+const validateLogin = () => {
+  const newErrors = {};
+
+  if (!emailRegex.test(input.email)) {
+    newErrors.email = "Please enter a valid email address";
+  }
+
+  if (!input.password || input.password.length < 6) {
+    newErrors.password = "Password must be at least 6 characters";
+  }
+
+  if (!input.role) {
+    newErrors.role = "Please select a role";
+  }
+
+  setErrors(newErrors);
+  return Object.keys(newErrors).length === 0;
+};
+
+
+
+
+
+
+
+  // const submitHandler = async (e) => {
+  //   e.preventDefault();
+  //   try {
   const submitHandler = async (e) => {
-    e.preventDefault();
-    try {
+  e.preventDefault();
+
+  if (!validateLogin()) return;
+
+  try {
+
       dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
         headers: { "Content-Type": "application/json" },
@@ -77,6 +122,10 @@ const Login = () => {
                   placeholder="you@example.com"
                   className="mt-2 h-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
+                {errors.email && (
+  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+)}
+
               </div>
 
               {/* Password */}
@@ -90,6 +139,10 @@ const Login = () => {
                   placeholder="••••••••"
                   className="mt-2 h-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
+                {errors.password && (
+  <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+)}
+
               </div>
 
               {/* Role Selection */}
@@ -123,6 +176,10 @@ const Login = () => {
                     </Label>
                   </div>
                 </RadioGroup>
+                {errors.role && (
+  <p className="text-xs text-red-500 mt-2">{errors.role}</p>
+)}
+
               </div>
 
               {/* Submit Button */}

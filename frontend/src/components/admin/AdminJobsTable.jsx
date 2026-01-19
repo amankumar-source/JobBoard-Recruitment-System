@@ -1,4 +1,5 @@
 
+
 import React, { useEffect, useState } from "react";
 import {
   Table,
@@ -17,27 +18,27 @@ import { useNavigate } from "react-router-dom";
 
 const AdminJobsTable = () => {
   const { allAdminJobs, searchJobByText } = useSelector((store) => store.job);
-
   const [filterJobs, setFilterJobs] = useState(allAdminJobs);
   const navigate = useNavigate();
 
   useEffect(() => {
     const filteredJobs = allAdminJobs.filter((job) => {
-      if (!searchJobByText) {
-        return true;
-      }
+      if (!searchJobByText) return true;
       return (
         job?.title?.toLowerCase().includes(searchJobByText.toLowerCase()) ||
-        job?.company?.name.toLowerCase().includes(searchJobByText.toLowerCase())
+        job?.company?.name
+          ?.toLowerCase()
+          .includes(searchJobByText.toLowerCase())
       );
     });
     setFilterJobs(filteredJobs);
   }, [allAdminJobs, searchJobByText]);
 
   return (
-    <div>
+    <div className="w-full overflow-x-auto">
       <Table>
         <TableCaption>A list of your recent posted jobs</TableCaption>
+
         <TableHeader>
           <TableRow>
             <TableHead>Company Logo</TableHead>
@@ -47,44 +48,67 @@ const AdminJobsTable = () => {
             <TableHead className="text-right">Action</TableHead>
           </TableRow>
         </TableHeader>
+
         <TableBody>
-          {filterJobs?.map((job) => (
-            <tr key={job._id}>
-              <TableCell>
-                <Avatar>
-                  <AvatarImage src={job?.company?.logo} alt={job?.company?.name} />
-                </Avatar>
+          {filterJobs.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center text-gray-500 py-6"
+              >
+                No jobs found
               </TableCell>
-              <TableCell>{job?.company?.name}</TableCell>
-              <TableCell>{job?.title}</TableCell>
-              <TableCell>{job?.createdAt.split("T")[0]}</TableCell>
-              <TableCell className="text-right cursor-pointer">
-                <Popover>
-                  <PopoverTrigger>
-                    <MoreHorizontal />
-                  </PopoverTrigger>
-                  <PopoverContent className="w-32">
-                    <div
-                      onClick={() => navigate(`/admin/companies/${job.company._id}`)}
-                      className="flex items-center gap-2 w-fit cursor-pointer"
-                    >
-                      <Edit2 className="w-4" />
-                      <span>Edit</span>
-                    </div>
-                    <div
-                      onClick={() =>
-                        navigate(`/admin/jobs/${job._id}/applicants`)
-                      }
-                      className="flex items-center w-fit gap-2 cursor-pointer mt-2"
-                    >
-                      <Eye className="w-4" />
-                      <span>Applicants</span>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </TableCell>
-            </tr>
-          ))}
+            </TableRow>
+          ) : (
+            filterJobs.map((job) => (
+              <TableRow key={job._id}>
+                <TableCell>
+                  <Avatar>
+                    <AvatarImage
+                      src={job?.company?.logo}
+                      alt={job?.company?.name}
+                    />
+                  </Avatar>
+                </TableCell>
+
+                <TableCell>{job?.company?.name}</TableCell>
+                <TableCell>{job?.title}</TableCell>
+                <TableCell>
+                  {job?.createdAt?.split("T")[0]}
+                </TableCell>
+
+                <TableCell className="text-right">
+                  <Popover>
+                    <PopoverTrigger className="inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100">
+                      <MoreHorizontal />
+                    </PopoverTrigger>
+
+                    <PopoverContent className="w-36">
+                      <div
+                        onClick={() =>
+                          navigate(`/admin/companies/${job.company._id}`)
+                        }
+                        className="flex items-center gap-2 cursor-pointer"
+                      >
+                        <Edit2 className="w-4" />
+                        <span>Edit</span>
+                      </div>
+
+                      <div
+                        onClick={() =>
+                          navigate(`/admin/jobs/${job._id}/applicants`)
+                        }
+                        className="flex items-center gap-2 cursor-pointer mt-3"
+                      >
+                        <Eye className="w-4" />
+                        <span>Applicants</span>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
     </div>

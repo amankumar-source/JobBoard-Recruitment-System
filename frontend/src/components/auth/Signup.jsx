@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Label } from "../ui/label";
@@ -13,6 +12,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
 
+// ✅ Validation regex
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const phoneRegex = /^[6-9]\d{9}$/;
+
 const Signup = () => {
   const [input, setInput] = useState({
     fullname: "",
@@ -22,6 +25,7 @@ const Signup = () => {
     role: "",
     file: null,
   });
+  const [errors, setErrors] = useState({});
 
   const { loading, user } = useSelector((store) => store.auth);
   const dispatch = useDispatch();
@@ -35,8 +39,40 @@ const Signup = () => {
     setInput({ ...input, file: e.target.files?.[0] || null });
   };
 
+  const validateSignup = () => {
+    const newErrors = {};
+
+    if (!input.fullname.trim() || input.fullname.length < 3) {
+      newErrors.fullname = "Full name must be at least 3 characters";
+    }
+
+    if (!emailRegex.test(input.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    if (!phoneRegex.test(input.phoneNumber)) {
+      newErrors.phoneNumber = "Enter a valid 10-digit Indian phone number";
+    }
+
+    if (!input.password || input.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (!input.role) {
+      newErrors.role = "Please select a role";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // const submitHandler = async (e) => {
+  //   e.preventDefault();
   const submitHandler = async (e) => {
     e.preventDefault();
+
+    if (!validateSignup()) return;
+
     const formData = new FormData();
     formData.append("fullname", input.fullname);
     formData.append("email", input.email);
@@ -95,6 +131,9 @@ const Signup = () => {
                   placeholder="John Doe"
                   className="h-11 rounded-xl text-sm border-gray-300 focus:border-purple-400"
                 />
+                {errors.fullname && (
+                  <p className="text-xs text-red-500 mt-1">{errors.fullname}</p>
+                )}
               </div>
 
               {/* Email */}
@@ -108,6 +147,9 @@ const Signup = () => {
                   placeholder="you@example.com"
                   className="h-11 rounded-xl text-sm border-gray-300 focus:border-purple-400"
                 />
+                {errors.email && (
+                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                )}
               </div>
 
               {/* Phone Number */}
@@ -121,6 +163,11 @@ const Signup = () => {
                   placeholder="+91 9876543210"
                   className="h-11 rounded-xl text-sm border-gray-300 focus:border-purple-400"
                 />
+                {errors.phoneNumber && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.phoneNumber}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -134,6 +181,9 @@ const Signup = () => {
                   placeholder="••••••••"
                   className="h-11 rounded-xl text-sm border-gray-300 focus:border-purple-400"
                 />
+                {errors.password && (
+                  <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+                )}
               </div>
 
               {/* Role + File Upload - Side by side */}
@@ -151,7 +201,10 @@ const Signup = () => {
                         onChange={changeEventHandler}
                         className="w-4 h-4 text-purple-600"
                       />
-                      <Label className="cursor-pointer text-base">Student</Label>
+
+                      <Label className="cursor-pointer text-base">
+                        Student
+                      </Label>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Input
@@ -162,9 +215,14 @@ const Signup = () => {
                         onChange={changeEventHandler}
                         className="w-4 h-4 text-purple-600"
                       />
-                      <Label className="cursor-pointer text-base">Recruiter</Label>
+                      <Label className="cursor-pointer text-base">
+                        Recruiter
+                      </Label>
                     </div>
                   </RadioGroup>
+                  {errors.role && (
+                    <p className="text-xs text-red-500 mt-2">{errors.role}</p>
+                  )}
                 </div>
 
                 {/* Beautiful File Upload Button */}
@@ -195,7 +253,10 @@ const Signup = () => {
 
               {/* Signup Button */}
               {loading ? (
-                <Button disabled className="w-full h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium">
+                <Button
+                  disabled
+                  className="w-full h-12 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium"
+                >
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                   Please wait...
                 </Button>
@@ -211,7 +272,10 @@ const Signup = () => {
               {/* Login Link */}
               <p className="text-center text-sm text-gray-600 mt-6">
                 Already have an account?{" "}
-                <Link to="/login" className="text-purple-600 font-medium hover:underline">
+                <Link
+                  to="/login"
+                  className="text-purple-600 font-medium hover:underline"
+                >
                   Login here
                 </Link>
               </p>

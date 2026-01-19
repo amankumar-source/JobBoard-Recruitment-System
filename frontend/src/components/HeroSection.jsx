@@ -119,7 +119,7 @@ const HeroSection = () => {
       </div>
 
       {/* Custom Animations */}
-      <style jsx>{`
+      {/* <style jsx>{`
         @keyframes float {
           0%,
           100% {
@@ -147,7 +147,41 @@ const HeroSection = () => {
         .animate-bounce-subtle {
           animation: bounce-subtle 4s infinite;
         }
-      `}</style>
+      `}</style> */}
+{/* Custom Animations */}
+<style>{`
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-30px) rotate(5deg);
+    }
+  }
+
+  .animate-float {
+    animation: float 12s infinite ease-in-out;
+  }
+
+  .animate-float-delay {
+    animation: float 15s infinite ease-in-out 3s;
+  }
+
+  @keyframes bounce-subtle {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+
+  .animate-bounce-subtle {
+    animation: bounce-subtle 4s infinite;
+  }
+`}</style>
+
+      
     </div>
   );
 };

@@ -152,17 +152,42 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition"
-        >
-          {mobileMenuOpen ? (
-            <X className="w-6 h-6" />
-          ) : (
-            <Menu className="w-6 h-6" />
+        <div className="md:hidden flex items-center gap-3">
+          {/* NOT logged in → Login icon */}
+          {!user && (
+            <Link to="/login">
+              <button className="w-9 h-9 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white flex items-center justify-center shadow-md">
+                <User2 className="w-5 h-5" />
+              </button>
+            </Link>
           )}
-        </button>
+
+          {user && (
+            <Link to="/profile">
+              <Avatar className="w-9 h-9 ring-2 ring-purple-300 cursor-pointer">
+                <AvatarImage
+                  src={user?.profile?.profilePhoto}
+                  alt={user?.fullname}
+                />
+                <AvatarFallback className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold">
+                  {user?.fullname?.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          )}
+
+          {/* Hamburger (ONLY menu controller) */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-2 rounded-lg hover:bg-gray-100 transition"
+          >
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
