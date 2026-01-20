@@ -94,22 +94,14 @@ export const login = async (req, res) => {
       profile: user.profile,
     };
 
-    // return res
-    //   .status(200)
-    //   .cookie("token", token, {
-    //     maxAge: 1 * 24 * 60 * 60 * 1000,
-    //     httpsOnly: true,
-    //     sameSite: "strict",
-    //   })
-    //   .json({
-
+ 
     return res
   .status(200)
   .cookie("token", token, {
     maxAge: 1 * 24 * 60 * 60 * 1000,
-    httpOnly: true,        // ✅ correct key
-    secure: true,          // ✅ required on Render (HTTPS)
-    sameSite: "none",      // ✅ allow cross-site (Vercel ↔ Render)
+    httpOnly: true,       
+    secure: true,         
+    sameSite: "none",      
   })
   .json({
 
@@ -145,12 +137,6 @@ export const logout = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const { fullname, email, phoneNumber, bio, skills } = req.body;
-
-    // const file = req.file;
-    // // cloudinary ayega idhar
-    // const fileUri = getDataUri(file);
-    // const cloudResponse = await cloudinary.uploader.upload(fileUri.content);
-
 
     const file = req.file;
 
