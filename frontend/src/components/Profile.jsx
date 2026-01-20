@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Navbar from "./shared/Navbar";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
@@ -16,7 +15,9 @@ const Profile = () => {
   const [open, setOpen] = useState(false);
   const { user } = useSelector((store) => store.auth);
 
-  const profilePhoto = user?.profile?.profilePhoto || "https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg";
+  const profilePhoto =
+    user?.profile?.profilePhoto ||
+    "https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg";
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
@@ -28,8 +29,8 @@ const Profile = () => {
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div className="flex items-center gap-6">
               <Avatar className="h-28 w-28 ring-4 ring-purple-200">
-                <AvatarImage 
-                  src={profilePhoto} 
+                <AvatarImage
+                  src={profilePhoto}
                   alt={user?.fullname}
                   className="object-cover"
                 />
@@ -43,7 +44,8 @@ const Profile = () => {
                   {user?.fullname || "Your Name"}
                 </h1>
                 <p className="text-gray-600 mt-2 max-w-md">
-                  {user?.profile?.bio || "Add a bio to let recruiters know about you"}
+                  {user?.profile?.bio ||
+                    "Add a bio to let recruiters know about you"}
                 </p>
               </div>
             </div>
@@ -64,14 +66,18 @@ const Profile = () => {
               <div className="p-3 bg-purple-100 rounded-full">
                 <Mail className="h-5 w-5 text-purple-600" />
               </div>
-              <span className="font-medium">{user?.email || "email@example.com"}</span>
+              <span className="font-medium">
+                {user?.email || "email@example.com"}
+              </span>
             </div>
 
             <div className="flex items-center gap-4 text-gray-700">
               <div className="p-3 bg-pink-100 rounded-full">
                 <Contact className="h-5 w-5 text-pink-600" />
               </div>
-              <span className="font-medium">{user?.phoneNumber || "+91 XXXXX XXXXX"}</span>
+              <span className="font-medium">
+                {user?.phoneNumber || "+91 XXXXX XXXXX"}
+              </span>
             </div>
           </div>
 
@@ -102,7 +108,9 @@ const Profile = () => {
             </h2>
             {user?.profile?.resume ? (
               <a
-                href={user.profile.resume}
+                href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                  user.profile.resume,
+                )}&embedded=true`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-3 text-purple-600 font-semibold hover:underline transition"
@@ -110,7 +118,9 @@ const Profile = () => {
                 <div className="p-3 bg-purple-100 rounded-xl">
                   <FileText className="h-6 w-6" />
                 </div>
-                <span>{user.profile.resumeOriginalName || "My_Resume.pdf"}</span>
+                <span>
+                  {user.profile.resumeOriginalName || "My_Resume.pdf"}
+                </span>
               </a>
             ) : (
               <p className="text-gray-500 italic">No resume uploaded</p>

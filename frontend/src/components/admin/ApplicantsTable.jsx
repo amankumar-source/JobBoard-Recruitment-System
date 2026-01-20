@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import {
   Table,
@@ -28,7 +25,7 @@ const ApplicantsTable = () => {
       axios.defaults.withCredentials = true;
       const res = await axios.post(
         `${APPLICATION_API_END_POINT}/status/${id}/update`,
-        { status }
+        { status },
       );
       if (res.data.success) {
         toast.success(res.data.message);
@@ -57,10 +54,7 @@ const ApplicantsTable = () => {
         <TableBody>
           {!applicants?.applications || applicants.applications.length === 0 ? (
             <TableRow>
-              <TableCell
-                colSpan={6}
-                className="text-center text-gray-500 py-6"
-              >
+              <TableCell colSpan={6} className="text-center text-gray-500 py-6">
                 No applicants found
               </TableCell>
             </TableRow>
@@ -71,11 +65,21 @@ const ApplicantsTable = () => {
                 <TableCell>{item?.applicant?.email}</TableCell>
                 <TableCell>{item?.applicant?.phoneNumber}</TableCell>
 
-                <TableCell>
+                {/* <TableCell>
                   {item.applicant?.profile?.resume ? (
+                    // <a
+                    //   className="text-blue-600 hover:underline"
+                    //   href={item?.applicant?.profile?.resume}
+                    //   target="_blank"
+                    //   rel="noopener noreferrer"
+                    // >
+                    //   {item?.applicant?.profile?.resumeOriginalName}
+                    // </a>
                     <a
                       className="text-blue-600 hover:underline"
-                      href={item?.applicant?.profile?.resume}
+                      href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+                        item?.applicant?.profile?.resume,
+                      )}&embedded=true`}
                       target="_blank"
                       rel="noopener noreferrer"
                     >
@@ -84,7 +88,37 @@ const ApplicantsTable = () => {
                   ) : (
                     <span>NA</span>
                   )}
-                </TableCell>
+                </TableCell> */}
+                <TableCell>
+  {item.applicant?.profile?.resume ? (
+    <div className="flex flex-col gap-1">
+      {/* View Resume */}
+      <a
+        className="text-blue-600 hover:underline"
+        href={`https://docs.google.com/viewer?url=${encodeURIComponent(
+          item.applicant.profile.resume
+        )}&embedded=true`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View Resume
+      </a>
+
+      <a
+  className="text-green-600 hover:underline text-sm"
+  href={item.applicant.profile.resume}
+  target="_self"
+>
+  Download
+</a>
+
+
+    </div>
+  ) : (
+    <span>NA</span>
+  )}
+</TableCell>
+
 
                 <TableCell>
                   {item?.applicant?.createdAt?.split("T")[0]}
