@@ -20,13 +20,24 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// const corsOptions = {
+//   origin: [
+//     "http://localhost:5173",
+//     "https://job-board-recruitment-system.vercel.app"
+//   ],
+//   origin:true,
+//   credentials: true,
+// };
+
+// app.use(cors(corsOptions));
 const corsOptions = {
-  origin: [
-    "http://localhost:5173",
-    "https://job-board-recruitment-system.vercel.app"
-  ],
-  origin:true,
-  credentials: true,
+    origin: [
+        "http://localhost:5173", 
+        "https://job-board-recruitment-system.vercel.app"
+    ],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Added for safety
+    allowedHeaders: ['Content-Type', 'Authorization'] // Added for safety
 };
 
 app.use(cors(corsOptions));
