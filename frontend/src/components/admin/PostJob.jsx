@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Label } from "../ui/label";
@@ -37,15 +35,16 @@ const PostJob = () => {
   const navigate = useNavigate();
   const { companies } = useSelector((store) => store.company);
 
+  const uniqueCompanies = companies.filter(
+    (c, i, arr) => arr.findIndex((x) => x._id === c._id) === i,
+  );
+
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
   };
 
   const selectChangeHandler = (value) => {
-    const selectedCompany = companies.find(
-      (company) => company.name.toLowerCase() === value
-    );
-    setInput({ ...input, companyId: selectedCompany._id });
+    setInput({ ...input, companyId: value });
   };
 
   const submitHandler = async (e) => {
@@ -174,11 +173,8 @@ const PostJob = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      {companies.map((company) => (
-                        <SelectItem
-                          key={company._id}
-                          value={company.name.toLowerCase()}
-                        >
+                      {uniqueCompanies.map((company) => (
+                        <SelectItem key={company._id} value={company._id}>
                           {company.name}
                         </SelectItem>
                       ))}

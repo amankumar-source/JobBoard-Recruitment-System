@@ -1,5 +1,4 @@
 
-
 import React, { useEffect, useState } from "react";
 import Navbar from "./shared/Navbar";
 import FilterCard from "./FilterCard";

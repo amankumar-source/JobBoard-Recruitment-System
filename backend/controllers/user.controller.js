@@ -144,8 +144,8 @@ let cloudResponse;
 if (file) {
   const fileUri = getDataUri(file);
   cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-    resource_type: "raw",   // ✅ IMPORTANT
-    folder: "resumes",      // ✅ optional but recommended
+    resource_type: "raw",   
+    folder: "resumes",      
   });
 }
 
