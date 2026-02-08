@@ -15,6 +15,21 @@ import PostJob from "./components/admin/PostJob";
 import Applicants from "./components/admin/Applicants";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
+import AIChatWidget from "./components/AIChatWidget"; //new
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const appRouter = createBrowserRouter([
   {
     path: "/",
@@ -96,11 +111,13 @@ const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  
 ]);
 function App() {
   return (
     <div>
       <RouterProvider router={appRouter} />
+       <AIChatWidget />
     </div>
   );
 }
