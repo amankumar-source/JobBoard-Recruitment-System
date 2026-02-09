@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const knowledge = {
   start: {
-    text: "Hi 👋 I’m Jobvista AI. I can guide you with jobs, skills, resumes, and interviews.",
+    text: "Hi 👋 I’m Jobvista Career Assistant. I can guide you with jobs, skills, resumes, and interviews.",
     options: [
       "How can I find relevant jobs?",
       "How can I improve my skills?",
@@ -105,6 +105,35 @@ const knowledge = {
       "How can I find relevant jobs?",
     ],
   },
+
+  fallback: {
+  text:
+    "I didn’t quite understand that, but I can help you with the following:",
+  options: [
+    "How can I find relevant jobs?",
+    "How can I improve my skills?",
+    "How do I build a strong resume?",
+    "How should I prepare for interviews?",
+  ],
+},
+
+};
+
+/* =======================
+   KEYWORD → INTENT MAP
+======================= */
+
+const keywordMap = {
+  job: "How can I find relevant jobs?",
+  jobs: "How can I find relevant jobs?",
+  apply: "What is the best way to apply for jobs?",
+  resume: "How do I build a strong resume?",
+  cv: "How do I build a strong resume?",
+  skill: "How can I improve my skills?",
+  skills: "How can I improve my skills?",
+  interview: "How should I prepare for interviews?",
+  salary: "How can I negotiate my salary?",
+  negotiation: "How can I negotiate my salary?",
 };
 
 /* =======================
@@ -134,6 +163,31 @@ const AIChatWidget = () => {
   }, [chat, isTyping]);
 
   /* =======================
+     FIND INTENT FROM TEXT
+  ======================= */
+
+  const findIntentFromText = text => {
+    const lower = text.toLowerCase();
+
+    for (const key in keywordMap) {
+      if (lower.includes(key)) {
+        return keywordMap[key];
+      }
+    }
+    return null;
+  };
+  const looksLikeSkill = text => {
+  const cleaned = text.trim().toLowerCase();
+
+  // single or two-word alphabetic input
+  return (
+    cleaned.split(" ").length <= 2 &&
+    /^[a-zA-Z]+$/.test(cleaned.replace(" ", ""))
+  );
+};
+
+
+  /* =======================
      HANDLE MESSAGE
   ======================= */
 
@@ -151,7 +205,22 @@ const AIChatWidget = () => {
     setMessage("");
 
     setTimeout(() => {
-      const data = knowledge[text] || knowledge.start;
+      let data = knowledge[text];
+
+      if (!data) {
+        const intentQuestion = findIntentFromText(text);
+        // data = intentQuestion ? knowledge[intentQuestion] : knowledge.start;
+        // data = intentQuestion ? knowledge[intentQuestion] : knowledge.fallback;
+        if (intentQuestion) {
+  data = knowledge[intentQuestion];
+} else if (looksLikeSkill(text)) {
+  data = knowledge["How can I improve my skills?"];
+} else {
+  data = knowledge.fallback;
+}
+
+
+      }
 
       setChat(prev => [
         ...prev,
@@ -174,7 +243,7 @@ const AIChatWidget = () => {
         className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 px-5 py-3 rounded-full 
         bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-xl hover:scale-105 transition"
       >
-        ✨ <span className="hidden sm:block font-semibold">AI Career Assistant</span>
+        ✨ <span className="hidden sm:block font-semibold">Career Assistant</span>
       </button>
 
       {/* CHAT BOX */}
@@ -191,7 +260,7 @@ const AIChatWidget = () => {
             {/* HEADER */}
             <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex justify-between">
               <div>
-                <h3 className="font-semibold">Jobvista AI</h3>
+                <h3 className="font-semibold">Jobvista</h3>
                 <p className="text-xs opacity-90">Career Assistant</p>
               </div>
               <button onClick={() => setOpen(false)}>✕</button>
@@ -213,7 +282,6 @@ const AIChatWidget = () => {
                     {c.text}
                   </motion.div>
 
-                  {/* OPTIONS */}
                   {c.sender === "bot" && c.options?.length > 0 && (
                     <div className="mt-2 space-y-2">
                       {c.options.map((opt, idx) => (
@@ -233,7 +301,7 @@ const AIChatWidget = () => {
 
               {isTyping && (
                 <div className="text-xs text-gray-500 italic">
-                  Jobvista AI is typing…
+                  Jobvista Assistant is typing…
                 </div>
               )}
 
