@@ -2,43 +2,110 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* =======================
-   KNOWLEDGE BASE
+   KNOWLEDGE ENGINE
 ======================= */
 
-const knowledgeBase = [
-  {
-    triggers: ["hi", "hello", "hey", "kaise"],
-    answer:
-      "Hello 👋 I’m Jobvista AI. I can guide you step by step for jobs and career growth.",
-    next: "How can I find jobs?",
+const knowledge = {
+  start: {
+    text: "Hi 👋 I’m Jobvista AI. I can guide you with jobs, skills, resumes, and interviews.",
+    options: [
+      "How can I find relevant jobs?",
+      "How can I improve my skills?",
+      "How do I build a strong resume?",
+      "How should I prepare for interviews?",
+    ],
   },
-  {
-    triggers: ["find jobs", "job search"],
-    answer:
-      "You can find jobs using keywords, skills, and location filters. A complete profile improves visibility.",
-    next: "What skills are in demand?",
-  },
-  {
-    triggers: ["skills", "in demand"],
-    answer:
-      "Top skills right now include React, Node.js, Full Stack Development, AWS, and DevOps.",
-    next: "How can I improve my resume?",
-  },
-  {
-    triggers: ["resume", "cv"],
-    answer:
-      "A good resume highlights relevant skills, real projects, and is tailored to the job role.",
-    next: "How should I prepare for interviews?",
-  },
-  {
-    triggers: ["interview"],
-    answer:
-      "Prepare by understanding the job role, practicing common questions, and explaining your projects clearly.",
-    next: null,
-  },
-];
 
-const STORAGE_KEY = "jobvista_ai_chat";
+  "How can I find relevant jobs?": {
+    text:
+      "You can find relevant jobs by using skill-based search, location filters, and keeping your profile updated.",
+    options: [
+      "How do job recommendations work?",
+      "What is the best way to apply for jobs?",
+    ],
+  },
+
+  "How do job recommendations work?": {
+    text:
+      "Job recommendations work best when your skills, experience, and preferences are updated in your profile.",
+    options: [
+      "How can I improve my skills?",
+      "How do I build a strong resume?",
+    ],
+  },
+
+  "What is the best way to apply for jobs?": {
+    text:
+      "Always tailor your resume, read job descriptions carefully, and apply consistently.",
+    options: [
+      "How do I build a strong resume?",
+      "How should I prepare for interviews?",
+    ],
+  },
+
+  "How can I improve my skills?": {
+    text:
+      "Focus on in-demand skills like React, Node.js, Cloud technologies, and problem-solving.",
+    options: [
+      "Which technical skills are in demand?",
+      "How do I build a strong resume?",
+    ],
+  },
+
+  "Which technical skills are in demand?": {
+    text:
+      "For developers, React, Node.js, databases, and cloud skills are highly valuable right now.",
+    options: [
+      "How do I build a strong resume?",
+      "How should I prepare for interviews?",
+    ],
+  },
+
+  "How do I build a strong resume?": {
+    text:
+      "A strong resume highlights your skills, real projects, and achievements in a clear format.",
+    options: [
+      "What are the best resume tips?",
+      "How should I prepare for interviews?",
+    ],
+  },
+
+  "What are the best resume tips?": {
+    text:
+      "Keep your resume concise, use bullet points, and customize it for each job role.",
+    options: [
+      "How should I prepare for interviews?",
+      "How can I find relevant jobs?",
+    ],
+  },
+
+  "How should I prepare for interviews?": {
+    text:
+      "Interview success comes from understanding the role, practicing questions, and explaining your projects confidently.",
+    options: [
+      "What are common interview questions?",
+      "How can I negotiate my salary?",
+    ],
+  },
+
+  "What are common interview questions?": {
+    text:
+      "Be ready to explain your projects, strengths, weaknesses, and problem-solving approach.",
+    options: [
+      "How can I negotiate my salary?",
+      "How can I find relevant jobs?",
+    ],
+  },
+
+  "How can I negotiate my salary?": {
+    text:
+      "Research market salary, know your value, and communicate confidently during negotiation.",
+    options: [
+      "How can I improve my skills?",
+      "How can I find relevant jobs?",
+    ],
+  },
+};
 
 /* =======================
    COMPONENT
@@ -48,22 +115,15 @@ const AIChatWidget = () => {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-
   const messagesEndRef = useRef(null);
-  const chatBoxRef = useRef(null);
 
-  const [chat, setChat] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved
-      ? JSON.parse(saved)
-      : [
-          {
-            sender: "bot",
-            text: "Hi 👋 I’m Jobvista AI. How can I help you today?",
-            nextQuestion: "How can I find jobs?",
-          },
-        ];
-  });
+  const [chat, setChat] = useState([
+    {
+      sender: "bot",
+      text: knowledge.start.text,
+      options: knowledge.start.options,
+    },
+  ]);
 
   /* =======================
      AUTO SCROLL
@@ -74,84 +134,53 @@ const AIChatWidget = () => {
   }, [chat, isTyping]);
 
   /* =======================
-     SAVE CHAT
-  ======================= */
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(chat));
-  }, [chat]);
-
-  /* =======================
-     CLOSE ON OUTSIDE CLICK
-  ======================= */
-
-  useEffect(() => {
-    const handleClickOutside = e => {
-      if (chatBoxRef.current && !chatBoxRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    if (open) document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
-
-  /* =======================
-     BOT RESPONSE
-  ======================= */
-
-  const getBotResponse = text => {
-    const msg = text.toLowerCase();
-    for (let item of knowledgeBase) {
-      if (item.triggers.some(t => msg.includes(t))) {
-        return { text: item.answer, next: item.next };
-      }
-    }
-    return {
-      text:
-        "I can help with jobs, skills, resumes, and interviews. Let’s continue step by step.",
-      next: "How can I find jobs?",
-    };
-  };
-
-  /* =======================
-     SEND MESSAGE
+     HANDLE MESSAGE
   ======================= */
 
   const sendMessage = text => {
     if (!text.trim()) return;
 
-    setChat(prev => [...prev, { sender: "user", text }]);
-    setMessage("");
     setIsTyping(true);
 
-    const reply = getBotResponse(text);
+    // Clear old options
+    setChat(prev =>
+      prev.map(m => (m.sender === "bot" ? { ...m, options: [] } : m))
+    );
+
+    setChat(prev => [...prev, { sender: "user", text }]);
+    setMessage("");
 
     setTimeout(() => {
+      const data = knowledge[text] || knowledge.start;
+
       setChat(prev => [
         ...prev,
-        { sender: "bot", text: reply.text, nextQuestion: reply.next },
+        {
+          sender: "bot",
+          text: data.text,
+          options: data.options,
+        },
       ]);
+
       setIsTyping(false);
-    }, 800);
+    }, 700);
   };
 
   return (
     <>
       {/* FLOATING BUTTON */}
       <button
-        onClick={() => setOpen(prev => !prev)}
+        onClick={() => setOpen(p => !p)}
         className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 px-5 py-3 rounded-full 
         bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-xl hover:scale-105 transition"
       >
         ✨ <span className="hidden sm:block font-semibold">AI Career Assistant</span>
       </button>
 
-      {/* CHAT */}
+      {/* CHAT BOX */}
       <AnimatePresence>
         {open && (
           <motion.div
-            ref={chatBoxRef}
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
@@ -160,7 +189,7 @@ const AIChatWidget = () => {
             h-[480px] sm:h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col"
           >
             {/* HEADER */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex justify-between rounded-t-2xl">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex justify-between">
               <div>
                 <h3 className="font-semibold">Jobvista AI</h3>
                 <p className="text-xs opacity-90">Career Assistant</p>
@@ -168,7 +197,7 @@ const AIChatWidget = () => {
               <button onClick={() => setOpen(false)}>✕</button>
             </div>
 
-            {/* MESSAGES (SCROLLABLE) */}
+            {/* MESSAGES */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
               {chat.map((c, i) => (
                 <div key={i}>
@@ -184,13 +213,20 @@ const AIChatWidget = () => {
                     {c.text}
                   </motion.div>
 
-                  {c.sender === "bot" && c.nextQuestion && !isTyping && (
-                    <button
-                      onClick={() => sendMessage(c.nextQuestion)}
-                      className="mt-2 text-sm px-3 py-2 rounded-xl bg-purple-100 text-purple-700 hover:bg-purple-200"
-                    >
-                      {c.nextQuestion}
-                    </button>
+                  {/* OPTIONS */}
+                  {c.sender === "bot" && c.options?.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {c.options.map((opt, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => sendMessage(opt)}
+                          className="block w-fit text-sm px-3 py-2 rounded-xl 
+                          bg-purple-100 text-purple-700 hover:bg-purple-200"
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
                   )}
                 </div>
               ))}
@@ -210,7 +246,7 @@ const AIChatWidget = () => {
                 value={message}
                 onChange={e => setMessage(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && sendMessage(message)}
-                placeholder="Ask about jobs, skills, resume..."
+                placeholder="Type or choose an option..."
                 disabled={isTyping}
                 className="flex-1 border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
               />
