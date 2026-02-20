@@ -1,7 +1,4 @@
 
-
-
-
 import React, { useEffect, useState } from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -16,15 +13,14 @@ const JobDescription = () => {
   const { singleJob } = useSelector((store) => store.job);
   const { user } = useSelector((store) => store.auth);
 
-  const isIntiallyApplied =
+  const isInitiallyApplied =
     singleJob?.applications?.some(
       (application) => application.applicant === user?._id
     ) || false;
 
-  const [isApplied, setIsApplied] = useState(isIntiallyApplied);
+  const [isApplied, setIsApplied] = useState(isInitiallyApplied);
 
-  const params = useParams();
-  const jobId = params.id;
+  const { id: jobId } = useParams();
   const dispatch = useDispatch();
 
   const applyJobHandler = async () => {
@@ -36,16 +32,19 @@ const JobDescription = () => {
 
       if (res.data.success) {
         setIsApplied(true);
-        const updatedSingleJob = {
-          ...singleJob,
-          applications: [...singleJob.applications, { applicant: user?._id }],
-        };
-        dispatch(setSingleJob(updatedSingleJob));
+        dispatch(
+          setSingleJob({
+            ...singleJob,
+            applications: [
+              ...singleJob.applications,
+              { applicant: user?._id },
+            ],
+          })
+        );
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -70,98 +69,122 @@ const JobDescription = () => {
     fetchSingleJob();
   }, [jobId, dispatch, user?._id]);
 
-  return (
-    <div className="max-w-7xl mx-auto my-10 px-4">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="font-bold text-xl">{singleJob?.title}</h1>
+  const daysAgo = singleJob?.createdAt
+    ? Math.floor(
+        (new Date() - new Date(singleJob.createdAt)) /
+          (1000 * 60 * 60 * 24)
+      )
+    : null;
 
-          <div className="flex flex-wrap items-center gap-2 mt-4">
-            <Badge className="text-blue-700 font-bold" variant="ghost">
-              {singleJob?.position} Positions
-            </Badge>
-            <Badge className="text-[#F83002] font-bold" variant="ghost">
-              {singleJob?.jobType}
-            </Badge>
-            <Badge className="text-[#7209b7] font-bold" variant="ghost">
-              {singleJob?.salary}LPA
-            </Badge>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-6 sm:py-10">
+      <div className="max-w-5xl mx-auto space-y-6">
+
+        {/* Company + Job Header */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-8">
+          <div className="flex flex-col gap-6">
+
+            {/* Company Info */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl border bg-white flex items-center justify-center shadow-sm">
+                {singleJob?.company?.logo ? (
+                  <img
+                    src={singleJob.company.logo}
+                    alt={singleJob.company.name}
+                    className="w-12 h-12 object-contain"
+                  />
+                ) : (
+                  <span className="text-gray-400 text-sm">Logo</span>
+                )}
+              </div>
+
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {singleJob?.company?.name || "Company Name"}
+                </h2>
+                <p className="text-sm text-gray-500">
+                  📍 {singleJob?.location || "Location"}{" "}
+                  {daysAgo !== null && `• Posted ${daysAgo} days ago`}
+                </p>
+              </div>
+            </div>
+
+            {/* Job Title + Apply */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  {singleJob?.title}
+                </h1>
+
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Badge className="bg-purple-100 text-purple-700">
+                    {singleJob?.position} Positions
+                  </Badge>
+                  <Badge className="bg-pink-100 text-pink-700">
+                    {singleJob?.jobType}
+                  </Badge>
+                  <Badge className="bg-indigo-100 text-indigo-700">
+                    ₹ {singleJob?.salary} LPA
+                  </Badge>
+                </div>
+              </div>
+
+              <Button
+                onClick={isApplied ? null : applyJobHandler}
+                disabled={isApplied}
+                className={`w-full sm:w-auto px-6 py-3 rounded-xl text-white ${
+                  isApplied
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
+                }`}
+              >
+                {isApplied ? "Already Applied" : "Apply Now"}
+              </Button>
+            </div>
           </div>
         </div>
 
-        <Button
-          onClick={isApplied ? null : applyJobHandler}
-          disabled={isApplied}
-          className={`rounded-lg w-full md:w-auto ${
-            isApplied
-              ? "bg-gray-600 cursor-not-allowed"
-              : "bg-[#7209b7] hover:bg-[#5f32ad]"
-          }`}
-        >
-          {isApplied ? "Already Applied" : "Apply Now"}
-        </Button>
-      </div>
+        {/* Job Overview */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Job Overview
+          </h2>
 
-      {/* Description */}
-      <h1 className="border-b-2 border-b-gray-300 font-medium py-4 mt-6">
-        Job Description
-      </h1>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <Info label="Role" value={singleJob?.title} />
+            <Info label="Location" value={singleJob?.location} />
+            <Info label="Experience" value={`${singleJob?.experience} yrs`} />
+            <Info label="Salary" value={`${singleJob?.salary} LPA`} />
+            <Info
+              label="Total Applicants"
+              value={singleJob?.applications?.length}
+            />
+            <Info
+              label="Posted On"
+              value={singleJob?.createdAt?.split("T")[0]}
+            />
+          </div>
+        </div>
 
-      <div className="my-4 space-y-2">
-        <h1 className="font-bold">
-          Role:
-          <span className="pl-4 font-normal text-gray-800">
-            {singleJob?.title}
-          </span>
-        </h1>
-
-        <h1 className="font-bold">
-          Location:
-          <span className="pl-4 font-normal text-gray-800">
-            {singleJob?.location}
-          </span>
-        </h1>
-
-        <h1 className="font-bold">
-          Description:
-          <span className="pl-4 font-normal text-gray-800 block">
+        {/* Description */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 sm:p-8">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            Job Description
+          </h2>
+          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
             {singleJob?.description}
-          </span>
-        </h1>
-
-        <h1 className="font-bold">
-          Experience:
-          <span className="pl-4 font-normal text-gray-800">
-            {singleJob?.experience} yrs
-          </span>
-        </h1>
-
-        <h1 className="font-bold">
-          Salary:
-          <span className="pl-4 font-normal text-gray-800">
-            {singleJob?.salary}LPA
-          </span>
-        </h1>
-
-        <h1 className="font-bold">
-          Total Applicants:
-          <span className="pl-4 font-normal text-gray-800">
-            {singleJob?.applications?.length}
-          </span>
-        </h1>
-
-        <h1 className="font-bold">
-          Posted Date:
-          <span className="pl-4 font-normal text-gray-800">
-            {singleJob?.createdAt?.split("T")[0]}
-          </span>
-        </h1>
+          </p>
+        </div>
       </div>
     </div>
   );
 };
 
+const Info = ({ label, value }) => (
+  <div>
+    <p className="text-sm text-gray-500">{label}</p>
+    <p className="mt-1 font-medium text-gray-900">{value}</p>
+  </div>
+);
+
 export default JobDescription;
-
-
