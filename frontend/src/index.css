@@ -75,3 +75,26 @@
       @apply bg-background text-foreground;
     }
   }
+
+/* ─── HeroSection animations (moved from inline <style>) ─── */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-30px) rotate(5deg); }
+}
+
+@keyframes float-delay {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50%       { transform: translateY(-30px) rotate(5deg); }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+.animate-float        { animation: float 12s infinite ease-in-out; }
+.animate-float-delay  { animation: float-delay 15s infinite ease-in-out 3s; }
+.animate-bounce-subtle { animation: bounce-subtle 4s infinite; }
+
+/* Smooth scrolling for the whole app */
+html { scroll-behavior: smooth; }

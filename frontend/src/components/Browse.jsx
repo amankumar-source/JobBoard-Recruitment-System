@@ -1,5 +1,4 @@
-
-import React from "react";
+import React, { useMemo } from "react";
 import Navbar from "./shared/Navbar";
 import Job from "./Job";
 import { useSelector } from "react-redux";
@@ -9,9 +8,14 @@ const Browse = () => {
   useGetAllJobs();
   const { allJobs, searchedQuery } = useSelector((store) => store.job);
 
-  const filteredJobs = allJobs.filter((job) =>
-    job?.title?.toLowerCase().includes(searchedQuery.toLowerCase())
-  );
+  // Memoised so filter only runs when jobs data or query actually changes
+  const filteredJobs = useMemo(() => {
+    if (!searchedQuery) return allJobs;
+    const q = searchedQuery.toLowerCase();
+    return allJobs.filter((job) =>
+      job?.title?.toLowerCase().includes(q)
+    );
+  }, [allJobs, searchedQuery]);
 
   return (
     <div>
@@ -32,6 +36,3 @@ const Browse = () => {
 };
 
 export default Browse;
-
-
-

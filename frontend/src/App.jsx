@@ -1,34 +1,31 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Navbar from "./components/shared/Navbar";
-import Login from "./components/auth/Login";
-import Signup from "./components/auth/Signup";
-import Home from "./components/Home";
-import Jobs from "./components/Jobs";
-import Browse from "./components/Browse";
-import Profile from "./components/Profile";
-import JobDescription from "./components/JobDescription";
-import Companies from "./components/admin/Companies";
-import CompanyCreate from "./components/admin/CompanyCreate";
-import CompanySetup from "./components/admin/CompanySetup";
-import AdminJobs from "./components/admin/AdminJobs";
-import PostJob from "./components/admin/PostJob";
-import Applicants from "./components/admin/Applicants";
+import { lazy, Suspense } from "react";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 
-import AIChatWidget from "./components/AIChatWidget"; //new
+// Eagerly load core pages (always needed)
+import Home from "./components/Home";
+import Login from "./components/auth/Login";
+import Signup from "./components/auth/Signup";
 
+// Lazy load non-critical routes for smaller initial bundle
+const Jobs = lazy(() => import("./components/Jobs"));
+const Browse = lazy(() => import("./components/Browse"));
+const Profile = lazy(() => import("./components/Profile"));
+const JobDescription = lazy(() => import("./components/JobDescription"));
+const Companies = lazy(() => import("./components/admin/Companies"));
+const CompanyCreate = lazy(() => import("./components/admin/CompanyCreate"));
+const CompanySetup = lazy(() => import("./components/admin/CompanySetup"));
+const AdminJobs = lazy(() => import("./components/admin/AdminJobs"));
+const PostJob = lazy(() => import("./components/admin/PostJob"));
+const Applicants = lazy(() => import("./components/admin/Applicants"));
+const AIChatWidget = lazy(() => import("./components/AIChatWidget"));
 
-
-
-
-
-
-
-
-
-
-
-
+// Minimal fallback to avoid layout shift
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const appRouter = createBrowserRouter([
   {
@@ -47,13 +44,10 @@ const appRouter = createBrowserRouter([
     path: "/jobs",
     element: <Jobs />,
   },
-  
   {
-  path: "/job/:id",
-  element: <JobDescription />,
-},
-
-  
+    path: "/job/:id",
+    element: <JobDescription />,
+  },
   {
     path: "/browse",
     element: <Browse />,
@@ -62,7 +56,7 @@ const appRouter = createBrowserRouter([
     path: "/profile",
     element: <Profile />,
   },
-  // admin ke liye yha se start hoga
+  // Admin routes
   {
     path: "/admin/companies",
     element: (
@@ -111,13 +105,15 @@ const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
-  
 ]);
+
 function App() {
   return (
     <div>
-      <RouterProvider router={appRouter} />
-       <AIChatWidget />
+      <Suspense fallback={<PageLoader />}>
+        <RouterProvider router={appRouter} />
+        <AIChatWidget />
+      </Suspense>
     </div>
   );
 }

@@ -10,29 +10,29 @@ import {
     PERSIST,
     PURGE,
     REGISTER,
-} from 'redux-persist'
-import storage from 'redux-persist/lib/storage'
+} from "redux-persist";
+import storage from "redux-persist/lib/storage";
 import companySlice from "./companySlice";
 import applicationSlice from "./applicationSlice";
 
-const persistConfig = {
-    key: 'root',
+// Only persist auth — jobs, companies, and applications are always re-fetched fresh.
+// Persisting them bloats localStorage and causes stale data issues.
+const authPersistConfig = {
+    key: "auth",
     version: 1,
     storage,
-}
+    whitelist: ["user"], // Only persist the user object, not loading flag
+};
 
 const rootReducer = combineReducers({
-    auth:authSlice,
-    job:jobSlice,
-    company:companySlice,
-    application:applicationSlice
-})
-
-const persistedReducer = persistReducer(persistConfig, rootReducer)
-
+    auth: persistReducer(authPersistConfig, authSlice),
+    job: jobSlice,
+    company: companySlice,
+    application: applicationSlice,
+});
 
 const store = configureStore({
-    reducer: persistedReducer,
+    reducer: rootReducer,
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             serializableCheck: {
@@ -40,4 +40,5 @@ const store = configureStore({
             },
         }),
 });
+
 export default store;

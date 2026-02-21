@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useMemo } from "react";
 import Navbar from "./shared/Navbar";
 import FilterCard from "./FilterCard";
 import Job from "./Job";
@@ -8,21 +7,18 @@ import { motion } from "framer-motion";
 
 const Jobs = () => {
   const { allJobs, searchedQuery } = useSelector((store) => store.job);
-  const [filterJobs, setFilterJobs] = useState(allJobs);
 
-  useEffect(() => {
-    if (searchedQuery) {
-      const filteredJobs = allJobs.filter((job) => {
-        return (
-          job.title.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job.description.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-          job.location.toLowerCase().includes(searchedQuery.toLowerCase())
-        );
-      });
-      setFilterJobs(filteredJobs);
-    } else {
-      setFilterJobs(allJobs);
-    }
+  // Replace useState+useEffect with useMemo — derived state from Redux
+  // This eliminates the extra render cycle caused by setState inside useEffect
+  const filterJobs = useMemo(() => {
+    if (!searchedQuery) return allJobs;
+    const q = searchedQuery.toLowerCase();
+    return allJobs.filter(
+      (job) =>
+        job.title.toLowerCase().includes(q) ||
+        job.description.toLowerCase().includes(q) ||
+        job.location.toLowerCase().includes(q)
+    );
   }, [allJobs, searchedQuery]);
 
   return (
@@ -30,14 +26,13 @@ const Jobs = () => {
       <Navbar />
       <div className="max-w-7xl mx-auto mt-5 px-4">
         <div className="flex flex-col md:flex-row gap-5">
-          
           {/* Filter Sidebar */}
           <div className="w-full md:w-1/4">
             <FilterCard />
           </div>
 
           {/* Jobs Section */}
-          {filterJobs.length <= 0 ? (
+          {filterJobs.length === 0 ? (
             <span className="text-center w-full">Job not found</span>
           ) : (
             <div className="flex-1 md:h-[88vh] overflow-y-auto pb-5">

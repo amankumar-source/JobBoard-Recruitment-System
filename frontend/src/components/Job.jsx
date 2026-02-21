@@ -1,19 +1,26 @@
-
-import React from "react";
+import React, { useMemo } from "react";
 import { Button } from "./ui/button";
 import { Bookmark } from "lucide-react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { useNavigate } from "react-router-dom";
 
+// Pure utility — defined outside component so it's not recreated on every render
+const getDaysAgo = (mongodbTime) => {
+  const createdAt = new Date(mongodbTime);
+  const timeDifference = Date.now() - createdAt.getTime();
+  return Math.floor(timeDifference / (1000 * 24 * 60 * 60));
+};
+
 const Job = ({ job }) => {
   const navigate = useNavigate();
 
-  const daysAgoFunction = (mongodbTime) => {
-    const createdAt = new Date(mongodbTime);
-    const currentTime = new Date();
-    const timeDifference = currentTime - createdAt;
-    return Math.floor(timeDifference / (1000 * 24 * 60 * 60));
+  // Only recompute when job.createdAt actually changes
+  const daysAgo = useMemo(() => getDaysAgo(job?.createdAt), [job?.createdAt]);
+
+  const handleViewDetails = (e) => {
+    e.stopPropagation();
+    navigate(`/job/${job?._id}`);
   };
 
   return (
@@ -33,10 +40,8 @@ const Job = ({ job }) => {
     >
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-xs text-gray-500 hover:text-gray-500">
-          {daysAgoFunction(job?.createdAt) === 0
-            ? "Today"
-            : `${daysAgoFunction(job?.createdAt)} days ago`}
+        <p className="text-xs text-gray-500">
+          {daysAgo === 0 ? "Today" : `${daysAgo} days ago`}
         </p>
 
         <Button
@@ -56,15 +61,15 @@ const Job = ({ job }) => {
           onClick={(e) => e.stopPropagation()}
         >
           <Avatar className="w-10 h-10">
-            <AvatarImage src={job?.company?.logo} />
+            <AvatarImage src={job?.company?.logo} loading="lazy" decoding="async" />
           </Avatar>
         </div>
 
         <div onClick={(e) => e.stopPropagation()}>
-          <h2 className="font-semibold text-gray-900 hover:text-gray-900 capitalize">
+          <h2 className="font-semibold text-gray-900 capitalize">
             {job?.company?.name}
           </h2>
-          <p className="text-sm text-gray-500 hover:text-gray-500 flex items-center gap-1">
+          <p className="text-sm text-gray-500 flex items-center gap-1">
             📍 India
           </p>
         </div>
@@ -72,10 +77,8 @@ const Job = ({ job }) => {
 
       {/* Job Title & Desc */}
       <div className="mt-4">
-        <h1 className="text-xl font-bold text-gray-900 hover:text-gray-900">
-          {job?.title}
-        </h1>
-        <p className="text-sm text-gray-600 hover:text-gray-600 mt-1 line-clamp-2">
+        <h1 className="text-xl font-bold text-gray-900">{job?.title}</h1>
+        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
           {job?.description}
         </p>
       </div>
@@ -101,10 +104,7 @@ const Job = ({ job }) => {
       {/* Actions */}
       <div className="flex gap-3 mt-5">
         <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/job/${job?._id}`);
-          }}
+          onClick={handleViewDetails}
           variant="outline"
           className="w-full"
           style={{ backgroundColor: "#C4B5FD" }}
@@ -124,4 +124,4 @@ const Job = ({ job }) => {
   );
 };
 
-export default Job;
+export default React.memo(Job);

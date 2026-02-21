@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Search, Sparkles, ArrowRight } from "lucide-react";
 import { useDispatch } from "react-redux";
@@ -11,10 +11,10 @@ const HeroSection = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const searchJobHandler = () => {
+  const searchJobHandler = useCallback(() => {
     dispatch(setSearchedQuery(query));
     navigate("/browse");
-  };
+  }, [query, dispatch, navigate]);
 
   return (
     <div className="relative min-h-screen bg-gray-50 overflow-hidden flex items-center justify-center">
@@ -60,7 +60,8 @@ const HeroSection = () => {
                     placeholder="Search for jobs, companies, skills..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && searchJobHandler()}
+                    onKeyDown={(e) => e.key === "Enter" && searchJobHandler()}
+
                     className="w-full pl-14 pr-6 py-5 text-lg font-medium text-gray-800 placeholder-gray-400 bg-gray-50 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-300 transition-all"
                   />
                 </div>
@@ -118,40 +119,8 @@ const HeroSection = () => {
         </div>
       </div>
 
-      
-<style>{`
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px) rotate(0deg);
-    }
-    50% {
-      transform: translateY(-30px) rotate(5deg);
-    }
-  }
 
-  .animate-float {
-    animation: float 12s infinite ease-in-out;
-  }
 
-  .animate-float-delay {
-    animation: float 15s infinite ease-in-out 3s;
-  }
-
-  @keyframes bounce-subtle {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-8px);
-    }
-  }
-
-  .animate-bounce-subtle {
-    animation: bounce-subtle 4s infinite;
-  }
-`}</style>
-
-      
     </div>
   );
 };

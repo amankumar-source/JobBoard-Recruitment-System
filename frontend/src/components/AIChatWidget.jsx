@@ -1,13 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 /* =======================
    KNOWLEDGE ENGINE
+   Defined at module level — never recreated on re-renders
 ======================= */
 
 const knowledge = {
   start: {
-    text: "Hi 👋 I’m Jobvista Career Assistant. I can guide you with jobs, skills, resumes, and interviews.",
+    text: "Hi 👋 I'm Jobvista Career Assistant. I can guide you with jobs, skills, resumes, and interviews.",
     options: [
       "How can I find relevant jobs?",
       "How can I improve my skills?",
@@ -17,8 +18,7 @@ const knowledge = {
   },
 
   "How can I find relevant jobs?": {
-    text:
-      "You can find relevant jobs by using skill-based search, location filters, and keeping your profile updated.",
+    text: "You can find relevant jobs by using skill-based search, location filters, and keeping your profile updated.",
     options: [
       "How do job recommendations work?",
       "What is the best way to apply for jobs?",
@@ -26,8 +26,7 @@ const knowledge = {
   },
 
   "How do job recommendations work?": {
-    text:
-      "Job recommendations work best when your skills, experience, and preferences are updated in your profile.",
+    text: "Job recommendations work best when your skills, experience, and preferences are updated in your profile.",
     options: [
       "How can I improve my skills?",
       "How do I build a strong resume?",
@@ -35,8 +34,7 @@ const knowledge = {
   },
 
   "What is the best way to apply for jobs?": {
-    text:
-      "Always tailor your resume, read job descriptions carefully, and apply consistently.",
+    text: "Always tailor your resume, read job descriptions carefully, and apply consistently.",
     options: [
       "How do I build a strong resume?",
       "How should I prepare for interviews?",
@@ -44,8 +42,7 @@ const knowledge = {
   },
 
   "How can I improve my skills?": {
-    text:
-      "Focus on in-demand skills like React, Node.js, Cloud technologies, and problem-solving.",
+    text: "Focus on in-demand skills like React, Node.js, Cloud technologies, and problem-solving.",
     options: [
       "Which technical skills are in demand?",
       "How do I build a strong resume?",
@@ -53,8 +50,7 @@ const knowledge = {
   },
 
   "Which technical skills are in demand?": {
-    text:
-      "For developers, React, Node.js, databases, and cloud skills are highly valuable right now.",
+    text: "For developers, React, Node.js, databases, and cloud skills are highly valuable right now.",
     options: [
       "How do I build a strong resume?",
       "How should I prepare for interviews?",
@@ -62,8 +58,7 @@ const knowledge = {
   },
 
   "How do I build a strong resume?": {
-    text:
-      "A strong resume highlights your skills, real projects, and achievements in a clear format.",
+    text: "A strong resume highlights your skills, real projects, and achievements in a clear format.",
     options: [
       "What are the best resume tips?",
       "How should I prepare for interviews?",
@@ -71,8 +66,7 @@ const knowledge = {
   },
 
   "What are the best resume tips?": {
-    text:
-      "Keep your resume concise, use bullet points, and customize it for each job role.",
+    text: "Keep your resume concise, use bullet points, and customize it for each job role.",
     options: [
       "How should I prepare for interviews?",
       "How can I find relevant jobs?",
@@ -80,8 +74,7 @@ const knowledge = {
   },
 
   "How should I prepare for interviews?": {
-    text:
-      "Interview success comes from understanding the role, practicing questions, and explaining your projects confidently.",
+    text: "Interview success comes from understanding the role, practicing questions, and explaining your projects confidently.",
     options: [
       "What are common interview questions?",
       "How can I negotiate my salary?",
@@ -89,8 +82,7 @@ const knowledge = {
   },
 
   "What are common interview questions?": {
-    text:
-      "Be ready to explain your projects, strengths, weaknesses, and problem-solving approach.",
+    text: "Be ready to explain your projects, strengths, weaknesses, and problem-solving approach.",
     options: [
       "How can I negotiate my salary?",
       "How can I find relevant jobs?",
@@ -98,8 +90,7 @@ const knowledge = {
   },
 
   "How can I negotiate my salary?": {
-    text:
-      "Research market salary, know your value, and communicate confidently during negotiation.",
+    text: "Research market salary, know your value, and communicate confidently during negotiation.",
     options: [
       "How can I improve my skills?",
       "How can I find relevant jobs?",
@@ -107,20 +98,19 @@ const knowledge = {
   },
 
   fallback: {
-  text:
-    "I didn’t quite understand that, but I can help you with the following:",
-  options: [
-    "How can I find relevant jobs?",
-    "How can I improve my skills?",
-    "How do I build a strong resume?",
-    "How should I prepare for interviews?",
-  ],
-},
-
+    text: "I didn't quite understand that, but I can help you with the following:",
+    options: [
+      "How can I find relevant jobs?",
+      "How can I improve my skills?",
+      "How do I build a strong resume?",
+      "How should I prepare for interviews?",
+    ],
+  },
 };
 
 /* =======================
    KEYWORD → INTENT MAP
+   Defined at module level — never recreated
 ======================= */
 
 const keywordMap = {
@@ -134,6 +124,26 @@ const keywordMap = {
   interview: "How should I prepare for interviews?",
   salary: "How can I negotiate my salary?",
   negotiation: "How can I negotiate my salary?",
+};
+
+/* =======================
+   Pure helpers — module-level, never recreated
+======================= */
+
+const findIntentFromText = (text) => {
+  const lower = text.toLowerCase();
+  for (const key in keywordMap) {
+    if (lower.includes(key)) return keywordMap[key];
+  }
+  return null;
+};
+
+const looksLikeSkill = (text) => {
+  const cleaned = text.trim().toLowerCase();
+  return (
+    cleaned.split(" ").length <= 2 &&
+    /^[a-zA-Z]+$/.test(cleaned.replace(" ", ""))
+  );
 };
 
 /* =======================
@@ -154,54 +164,23 @@ const AIChatWidget = () => {
     },
   ]);
 
-  /* =======================
-     AUTO SCROLL
-  ======================= */
-
+  /* Auto-scroll — only fire when chat or isTyping change */
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat, isTyping]);
 
-  /* =======================
-     FIND INTENT FROM TEXT
-  ======================= */
-
-  const findIntentFromText = text => {
-    const lower = text.toLowerCase();
-
-    for (const key in keywordMap) {
-      if (lower.includes(key)) {
-        return keywordMap[key];
-      }
-    }
-    return null;
-  };
-  const looksLikeSkill = text => {
-  const cleaned = text.trim().toLowerCase();
-
-  // single or two-word alphabetic input
-  return (
-    cleaned.split(" ").length <= 2 &&
-    /^[a-zA-Z]+$/.test(cleaned.replace(" ", ""))
-  );
-};
-
-
-  /* =======================
-     HANDLE MESSAGE
-  ======================= */
-
-  const sendMessage = text => {
+  /* Stable handler — useCallback prevents recreation on every render */
+  const sendMessage = useCallback((text) => {
     if (!text.trim()) return;
 
     setIsTyping(true);
 
     // Clear old options
-    setChat(prev =>
-      prev.map(m => (m.sender === "bot" ? { ...m, options: [] } : m))
+    setChat((prev) =>
+      prev.map((m) => (m.sender === "bot" ? { ...m, options: [] } : m))
     );
 
-    setChat(prev => [...prev, { sender: "user", text }]);
+    setChat((prev) => [...prev, { sender: "user", text }]);
     setMessage("");
 
     setTimeout(() => {
@@ -209,20 +188,16 @@ const AIChatWidget = () => {
 
       if (!data) {
         const intentQuestion = findIntentFromText(text);
-        // data = intentQuestion ? knowledge[intentQuestion] : knowledge.start;
-        // data = intentQuestion ? knowledge[intentQuestion] : knowledge.fallback;
         if (intentQuestion) {
-  data = knowledge[intentQuestion];
-} else if (looksLikeSkill(text)) {
-  data = knowledge["How can I improve my skills?"];
-} else {
-  data = knowledge.fallback;
-}
-
-
+          data = knowledge[intentQuestion];
+        } else if (looksLikeSkill(text)) {
+          data = knowledge["How can I improve my skills?"];
+        } else {
+          data = knowledge.fallback;
+        }
       }
 
-      setChat(prev => [
+      setChat((prev) => [
         ...prev,
         {
           sender: "bot",
@@ -233,13 +208,24 @@ const AIChatWidget = () => {
 
       setIsTyping(false);
     }, 700);
-  };
+  }, []);
+
+  const toggleOpen = useCallback(() => setOpen((p) => !p), []);
+  const handleClose = useCallback(() => setOpen(false), []);
+  const handleInputChange = useCallback((e) => setMessage(e.target.value), []);
+  const handleKeyDown = useCallback(
+    (e) => {
+      if (e.key === "Enter") sendMessage(message);
+    },
+    [message, sendMessage]
+  );
+  const handleSend = useCallback(() => sendMessage(message), [message, sendMessage]);
 
   return (
     <>
       {/* FLOATING BUTTON */}
       <button
-        onClick={() => setOpen(p => !p)}
+        onClick={toggleOpen}
         className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 px-5 py-3 rounded-full 
         bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-xl hover:scale-105 transition"
       >
@@ -258,12 +244,12 @@ const AIChatWidget = () => {
             h-[480px] sm:h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col"
           >
             {/* HEADER */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex justify-between">
+            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex justify-between rounded-t-2xl">
               <div>
                 <h3 className="font-semibold">Jobvista</h3>
                 <p className="text-xs opacity-90">Career Assistant</p>
               </div>
-              <button onClick={() => setOpen(false)}>✕</button>
+              <button onClick={handleClose} aria-label="Close chat">✕</button>
             </div>
 
             {/* MESSAGES */}
@@ -273,11 +259,10 @@ const AIChatWidget = () => {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className={`max-w-[80%] px-3 py-2 rounded-xl text-sm ${
-                      c.sender === "user"
+                    className={`max-w-[80%] px-3 py-2 rounded-xl text-sm ${c.sender === "user"
                         ? "ml-auto bg-purple-600 text-white"
                         : "bg-white border"
-                    }`}
+                      }`}
                   >
                     {c.text}
                   </motion.div>
@@ -312,14 +297,14 @@ const AIChatWidget = () => {
             <div className="p-3 border-t flex gap-2">
               <input
                 value={message}
-                onChange={e => setMessage(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && sendMessage(message)}
+                onChange={handleInputChange}
+                onKeyDown={handleKeyDown}
                 placeholder="Type or choose an option..."
                 disabled={isTyping}
-                className="flex-1 border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500"
+                className="flex-1 border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
               />
               <button
-                onClick={() => sendMessage(message)}
+                onClick={handleSend}
                 disabled={isTyping}
                 className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 rounded-xl text-sm"
               >

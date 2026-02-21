@@ -17,7 +17,8 @@ const AdminJobs = () => {
 
   useEffect(() => {
     dispatch(setSearchJobByText(input));
-  }, [input]);
+  }, [input, dispatch]);
+
 
   return (
     <div>

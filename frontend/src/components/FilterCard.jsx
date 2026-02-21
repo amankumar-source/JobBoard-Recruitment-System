@@ -35,7 +35,8 @@ const FilterCard = () => {
 
   useEffect(() => {
     dispatch(setSearchedQuery(selectedValue));
-  }, [selectedValue]);
+  }, [selectedValue, dispatch]);
+
 
   return (
     <motion.div

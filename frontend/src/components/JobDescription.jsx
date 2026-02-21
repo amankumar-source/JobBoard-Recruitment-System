@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { useParams } from "react-router-dom";
@@ -13,17 +12,22 @@ const JobDescription = () => {
   const { singleJob } = useSelector((store) => store.job);
   const { user } = useSelector((store) => store.auth);
 
-  const isInitiallyApplied =
-    singleJob?.applications?.some(
-      (application) => application.applicant === user?._id
-    ) || false;
+  // Memoise the initial applied check so it doesn't recompute on every render
+  const isInitiallyApplied = useMemo(
+    () =>
+      singleJob?.applications?.some(
+        (application) => application.applicant === user?._id
+      ) || false,
+    [singleJob?.applications, user?._id]
+  );
 
   const [isApplied, setIsApplied] = useState(isInitiallyApplied);
 
   const { id: jobId } = useParams();
   const dispatch = useDispatch();
 
-  const applyJobHandler = async () => {
+  // Stable handler reference — won't cause unnecessary child re-renders
+  const applyJobHandler = useCallback(async () => {
     try {
       const res = await axios.get(
         `${APPLICATION_API_END_POINT}/apply/${jobId}`,
@@ -46,7 +50,7 @@ const JobDescription = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || "Something went wrong");
     }
-  };
+  }, [jobId, singleJob, user?._id, dispatch]);
 
   useEffect(() => {
     const fetchSingleJob = async () => {
@@ -63,18 +67,19 @@ const JobDescription = () => {
           );
         }
       } catch (error) {
-        console.log(error);
+        void error;
       }
     };
     fetchSingleJob();
   }, [jobId, dispatch, user?._id]);
 
-  const daysAgo = singleJob?.createdAt
-    ? Math.floor(
-      (new Date() - new Date(singleJob.createdAt)) /
-      (1000 * 60 * 60 * 24)
-    )
-    : null;
+  // Memoised to avoid date math on every render
+  const daysAgo = useMemo(() => {
+    if (!singleJob?.createdAt) return null;
+    return Math.floor(
+      (new Date() - new Date(singleJob.createdAt)) / (1000 * 60 * 60 * 24)
+    );
+  }, [singleJob?.createdAt]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-6 sm:py-10">
@@ -92,6 +97,8 @@ const JobDescription = () => {
                     src={singleJob.company.logo}
                     alt={singleJob.company.name}
                     className="w-12 h-12 object-contain"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ) : (
                   <span className="text-gray-400 text-sm">Logo</span>
@@ -130,7 +137,7 @@ const JobDescription = () => {
               </div>
 
               <Button
-                onClick={isApplied ? null : applyJobHandler}
+                onClick={isApplied ? undefined : applyJobHandler}
                 disabled={isApplied}
                 className={`w-full sm:w-auto px-6 py-3 rounded-xl text-white ${isApplied
                     ? "bg-gray-400 cursor-not-allowed"
@@ -179,11 +186,13 @@ const JobDescription = () => {
   );
 };
 
-const Info = ({ label, value }) => (
+// Extracted as stable component — no unnecessary re-renders when parent updates
+const Info = React.memo(({ label, value }) => (
   <div>
     <p className="text-sm text-gray-500">{label}</p>
     <p className="mt-1 font-medium text-gray-900">{value}</p>
   </div>
-);
+));
+Info.displayName = "Info";
 
 export default JobDescription;
