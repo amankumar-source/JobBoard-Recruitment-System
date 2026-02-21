@@ -71,9 +71,9 @@ const JobDescription = () => {
 
   const daysAgo = singleJob?.createdAt
     ? Math.floor(
-        (new Date() - new Date(singleJob.createdAt)) /
-          (1000 * 60 * 60 * 24)
-      )
+      (new Date() - new Date(singleJob.createdAt)) /
+      (1000 * 60 * 60 * 24)
+    )
     : null;
 
   return (
@@ -132,11 +132,10 @@ const JobDescription = () => {
               <Button
                 onClick={isApplied ? null : applyJobHandler}
                 disabled={isApplied}
-                className={`w-full sm:w-auto px-6 py-3 rounded-xl text-white ${
-                  isApplied
+                className={`w-full sm:w-auto px-6 py-3 rounded-xl text-white ${isApplied
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
-                }`}
+                  }`}
               >
                 {isApplied ? "Already Applied" : "Apply Now"}
               </Button>
@@ -153,7 +152,7 @@ const JobDescription = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <Info label="Role" value={singleJob?.title} />
             <Info label="Location" value={singleJob?.location} />
-            <Info label="Experience" value={`${singleJob?.experience} yrs`} />
+            <Info label="Experience" value={`${singleJob?.experienceLevel} yrs`} />
             <Info label="Salary" value={`${singleJob?.salary} LPA`} />
             <Info
               label="Total Applicants"
