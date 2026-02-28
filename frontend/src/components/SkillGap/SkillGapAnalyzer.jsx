@@ -6,7 +6,7 @@ import { Label } from "../../components/ui/label";
 import { toast } from "sonner";
 import axios from "axios";
 
-import { SKILL_GAP_API_END_POINT } from "../../../utils/constant";
+import { SKILL_GAP_API_END_POINT } from "../../utils/constant";
 
 const SkillGapAnalyzer = () => {
     const [file, setFile] = useState(null);
