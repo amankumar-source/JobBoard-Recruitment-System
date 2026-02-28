@@ -27,7 +27,7 @@ const Navbar = () => {
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(error.response?.data?.message || "Logout failed");
     }
   };
@@ -35,14 +35,15 @@ const Navbar = () => {
   const navLinks =
     user && user.role === "recruiter"
       ? [
-          { to: "/admin/companies", label: "Companies" },
-          { to: "/admin/jobs", label: "Jobs" },
-        ]
+        { to: "/admin/companies", label: "Companies" },
+        { to: "/admin/jobs", label: "Jobs" },
+      ]
       : [
-          { to: "/", label: "Home" },
-          { to: "/jobs", label: "Jobs" },
-          { to: "/browse", label: "Browse" },
-        ];
+        { to: "/", label: "Home" },
+        { to: "/jobs", label: "Jobs" },
+        { to: "/browse", label: "Browse" },
+        { to: "/skill-gap", label: "Resume AI" },
+      ];
 
   return (
     <div className="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">

@@ -19,11 +19,12 @@ const AdminJobs = lazy(() => import("./components/admin/AdminJobs"));
 const PostJob = lazy(() => import("./components/admin/PostJob"));
 const Applicants = lazy(() => import("./components/admin/Applicants"));
 const AIChatWidget = lazy(() => import("./components/AIChatWidget"));
+const SkillGapAnalyzer = lazy(() => import("./components/SkillGap/SkillGapAnalyzer"));
 
 // Minimal fallback to avoid layout shift
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
-    <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+    <div className="w-8 h-8 border-4 border-gray-500 border-t-transparent rounded-full animate-spin" />
   </div>
 );
 
@@ -55,6 +56,10 @@ const appRouter = createBrowserRouter([
   {
     path: "/profile",
     element: <Profile />,
+  },
+  {
+    path: "/skill-gap",
+    element: <SkillGapAnalyzer />,
   },
   // Admin routes
   {

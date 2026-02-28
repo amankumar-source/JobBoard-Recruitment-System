@@ -22,7 +22,11 @@ const Jobs = () => {
   }, [allJobs, searchedQuery]);
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <Navbar />
       <div className="max-w-7xl mx-auto mt-5 px-4">
         <div className="flex flex-col md:flex-row gap-5">
@@ -53,7 +57,7 @@ const Jobs = () => {
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

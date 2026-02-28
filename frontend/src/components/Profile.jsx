@@ -9,6 +9,7 @@ import AppliedJobTable from "./AppliedJobTable";
 import UpdateProfileDialog from "./UpdateProfileDialog";
 import { useSelector } from "react-redux";
 import useGetAppliedJobs from "@/hooks/useGetAppliedJobs";
+import { motion } from "framer-motion";
 
 const Profile = () => {
   useGetAppliedJobs();
@@ -20,7 +21,12 @@ const Profile = () => {
     "https://www.shutterstock.com/image-vector/circle-line-simple-design-logo-600nw-2174926871.jpg";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50"
+    >
       <Navbar />
 
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -138,7 +144,7 @@ const Profile = () => {
       </div>
 
       <UpdateProfileDialog open={open} setOpen={setOpen} />
-    </div>
+    </motion.div>
   );
 };
 

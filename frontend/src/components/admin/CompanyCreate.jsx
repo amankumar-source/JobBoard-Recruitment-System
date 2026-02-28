@@ -34,7 +34,7 @@ const CompanyCreate = () => {
         navigate(`/admin/companies/${companyId}`);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

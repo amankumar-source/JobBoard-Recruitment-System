@@ -3,6 +3,7 @@ import Navbar from "./shared/Navbar";
 import Job from "./Job";
 import { useSelector } from "react-redux";
 import useGetAllJobs from "@/hooks/useGetAllJobs";
+import { motion } from "framer-motion";
 
 const Browse = () => {
   useGetAllJobs();
@@ -18,7 +19,11 @@ const Browse = () => {
   }, [allJobs, searchedQuery]);
 
   return (
-    <div>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+    >
       <Navbar />
       <div className="max-w-7xl mx-auto my-10 px-4">
         <h1 className="font-bold text-xl my-10">
@@ -31,7 +36,7 @@ const Browse = () => {
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

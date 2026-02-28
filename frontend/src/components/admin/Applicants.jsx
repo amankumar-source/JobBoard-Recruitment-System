@@ -22,7 +22,7 @@ const Applicants = () => {
         );
         dispatch(setAllApplicants(res.data.job));
       } catch (error) {
-        console.log(error);
+        console.error(error);
       }
     };
     fetchAllApplicants();

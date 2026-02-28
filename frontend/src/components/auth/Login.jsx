@@ -11,10 +11,11 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Login = () => {
   // ✅ Validation regex
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   const [input, setInput] = useState({
     email: "",
@@ -39,24 +40,24 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 
 
-const validateLogin = () => {
-  const newErrors = {};
+  const validateLogin = () => {
+    const newErrors = {};
 
-  if (!emailRegex.test(input.email)) {
-    newErrors.email = "Please enter a valid email address";
-  }
+    if (!emailRegex.test(input.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
 
-  if (!input.password || input.password.length < 6) {
-    newErrors.password = "Password must be at least 6 characters";
-  }
+    if (!input.password || input.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
 
-  if (!input.role) {
-    newErrors.role = "Please select a role";
-  }
+    if (!input.role) {
+      newErrors.role = "Please select a role";
+    }
 
-  setErrors(newErrors);
-  return Object.keys(newErrors).length === 0;
-};
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
 
 
@@ -68,11 +69,11 @@ const validateLogin = () => {
   //   e.preventDefault();
   //   try {
   const submitHandler = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!validateLogin()) return;
+    if (!validateLogin()) return;
 
-  try {
+    try {
 
       dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
@@ -96,7 +97,10 @@ const validateLogin = () => {
   }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50"
+    >
       <Navbar />
 
       <div className="flex items-center justify-center px-4 py-10 sm:py-16">
@@ -123,8 +127,8 @@ const validateLogin = () => {
                   className="mt-2 h-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
                 {errors.email && (
-  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
-)}
+                  <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+                )}
 
               </div>
 
@@ -140,8 +144,8 @@ const validateLogin = () => {
                   className="mt-2 h-12 rounded-xl border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
                 {errors.password && (
-  <p className="text-xs text-red-500 mt-1">{errors.password}</p>
-)}
+                  <p className="text-xs text-red-500 mt-1">{errors.password}</p>
+                )}
 
               </div>
 
@@ -177,8 +181,8 @@ const validateLogin = () => {
                   </div>
                 </RadioGroup>
                 {errors.role && (
-  <p className="text-xs text-red-500 mt-2">{errors.role}</p>
-)}
+                  <p className="text-xs text-red-500 mt-2">{errors.role}</p>
+                )}
 
               </div>
 
@@ -236,7 +240,7 @@ const validateLogin = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

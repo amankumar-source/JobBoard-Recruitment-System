@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 // ✅ Validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -103,7 +104,10 @@ const Signup = () => {
   }, [user, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50"
+    >
       <Navbar />
 
       {/* Full height center - no scroll needed */}
@@ -283,7 +287,7 @@ const Signup = () => {
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

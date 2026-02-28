@@ -7,6 +7,7 @@ import { APPLICATION_API_END_POINT, JOB_API_END_POINT } from "@/utils/constant";
 import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 const JobDescription = () => {
   const { singleJob } = useSelector((store) => store.job);
@@ -82,7 +83,12 @@ const JobDescription = () => {
   }, [singleJob?.createdAt]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-6 sm:py-10">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-6 sm:py-10"
+    >
       <div className="max-w-5xl mx-auto space-y-6">
 
         {/* Company + Job Header */}
@@ -140,8 +146,8 @@ const JobDescription = () => {
                 onClick={isApplied ? undefined : applyJobHandler}
                 disabled={isApplied}
                 className={`w-full sm:w-auto px-6 py-3 rounded-xl text-white ${isApplied
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90"
                   }`}
               >
                 {isApplied ? "Already Applied" : "Apply Now"}
@@ -182,7 +188,7 @@ const JobDescription = () => {
           </p>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
