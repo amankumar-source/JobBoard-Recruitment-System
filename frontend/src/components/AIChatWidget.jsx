@@ -6,10 +6,7 @@ import { Bot, Send, X, User2, MessageSquare, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { toast } from "sonner";
-import { USER_API_END_POINT } from "@/utils/constant";
-
-// Assuming backend runs on the same origin or we have a proxy:
-const AI_CHAT_API_END_POINT = "http://localhost:8000/api/ai-chat";
+import { USER_API_END_POINT, AI_CHAT_API_END_POINT } from "@/utils/constant";
 
 const AIChatWidget = () => {
   const { user } = useSelector((store) => store.auth);
