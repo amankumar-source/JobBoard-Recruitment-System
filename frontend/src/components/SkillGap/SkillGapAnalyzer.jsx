@@ -6,9 +6,7 @@ import { Label } from "../../components/ui/label";
 import { toast } from "sonner";
 import axios from "axios";
 
-// Assuming backend runs on the same origin or we have a proxy, or hardcode for dev:
-// You should probably put this in your utils/constant.js
-const SKILL_GAP_API_END_POINT = "http://localhost:8000/api/skill-gap";
+import { SKILL_GAP_API_END_POINT } from "../../../utils/constant";
 
 const SkillGapAnalyzer = () => {
     const [file, setFile] = useState(null);
