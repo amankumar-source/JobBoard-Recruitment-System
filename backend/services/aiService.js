@@ -95,7 +95,7 @@ class AIService {
             content: prompt,
           },
         ],
-        model: "llama-3.3-70b-versatile", // Using Llama 3 70B for fast & accurate JSON reasoning on Groq
+        model: "llama-3.1-8b-instant", // Using faster Llama 3 8B model for quicker response
         temperature: 0.1, // Low temperature for deterministic output
         response_format: { type: "json_object" }, // Enforce JSON output natively
       });
@@ -137,7 +137,7 @@ class AIService {
 
       const response = await this.client.chat.completions.create({
         messages: fullMessagesPayload,
-        model: "llama-3.3-70b-versatile",
+        model: "llama-3.1-8b-instant", // Using faster Llama 3 8B model for quicker response
         temperature: 0.5, // Slightly higher for natural conversation
         max_tokens: 1024,
       });
