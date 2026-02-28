@@ -1,320 +1,211 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Bot, Send, X, User2, MessageSquare, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
+import { toast } from "sonner";
+import { USER_API_END_POINT } from "@/utils/constant";
 
-/* =======================
-   KNOWLEDGE ENGINE
-   Defined at module level — never recreated on re-renders
-======================= */
-
-const knowledge = {
-  start: {
-    text: "Hi 👋 I'm Jobvista Career Assistant. I can guide you with jobs, skills, resumes, and interviews.",
-    options: [
-      "How can I find relevant jobs?",
-      "How can I improve my skills?",
-      "How do I build a strong resume?",
-      "How should I prepare for interviews?",
-    ],
-  },
-
-  "How can I find relevant jobs?": {
-    text: "You can find relevant jobs by using skill-based search, location filters, and keeping your profile updated.",
-    options: [
-      "How do job recommendations work?",
-      "What is the best way to apply for jobs?",
-    ],
-  },
-
-  "How do job recommendations work?": {
-    text: "Job recommendations work best when your skills, experience, and preferences are updated in your profile.",
-    options: [
-      "How can I improve my skills?",
-      "How do I build a strong resume?",
-    ],
-  },
-
-  "What is the best way to apply for jobs?": {
-    text: "Always tailor your resume, read job descriptions carefully, and apply consistently.",
-    options: [
-      "How do I build a strong resume?",
-      "How should I prepare for interviews?",
-    ],
-  },
-
-  "How can I improve my skills?": {
-    text: "Focus on in-demand skills like React, Node.js, Cloud technologies, and problem-solving.",
-    options: [
-      "Which technical skills are in demand?",
-      "How do I build a strong resume?",
-    ],
-  },
-
-  "Which technical skills are in demand?": {
-    text: "For developers, React, Node.js, databases, and cloud skills are highly valuable right now.",
-    options: [
-      "How do I build a strong resume?",
-      "How should I prepare for interviews?",
-    ],
-  },
-
-  "How do I build a strong resume?": {
-    text: "A strong resume highlights your skills, real projects, and achievements in a clear format.",
-    options: [
-      "What are the best resume tips?",
-      "How should I prepare for interviews?",
-    ],
-  },
-
-  "What are the best resume tips?": {
-    text: "Keep your resume concise, use bullet points, and customize it for each job role.",
-    options: [
-      "How should I prepare for interviews?",
-      "How can I find relevant jobs?",
-    ],
-  },
-
-  "How should I prepare for interviews?": {
-    text: "Interview success comes from understanding the role, practicing questions, and explaining your projects confidently.",
-    options: [
-      "What are common interview questions?",
-      "How can I negotiate my salary?",
-    ],
-  },
-
-  "What are common interview questions?": {
-    text: "Be ready to explain your projects, strengths, weaknesses, and problem-solving approach.",
-    options: [
-      "How can I negotiate my salary?",
-      "How can I find relevant jobs?",
-    ],
-  },
-
-  "How can I negotiate my salary?": {
-    text: "Research market salary, know your value, and communicate confidently during negotiation.",
-    options: [
-      "How can I improve my skills?",
-      "How can I find relevant jobs?",
-    ],
-  },
-
-  fallback: {
-    text: "I didn't quite understand that, but I can help you with the following:",
-    options: [
-      "How can I find relevant jobs?",
-      "How can I improve my skills?",
-      "How do I build a strong resume?",
-      "How should I prepare for interviews?",
-    ],
-  },
-};
-
-/* =======================
-   KEYWORD → INTENT MAP
-   Defined at module level — never recreated
-======================= */
-
-const keywordMap = {
-  job: "How can I find relevant jobs?",
-  jobs: "How can I find relevant jobs?",
-  apply: "What is the best way to apply for jobs?",
-  resume: "How do I build a strong resume?",
-  cv: "How do I build a strong resume?",
-  skill: "How can I improve my skills?",
-  skills: "How can I improve my skills?",
-  interview: "How should I prepare for interviews?",
-  salary: "How can I negotiate my salary?",
-  negotiation: "How can I negotiate my salary?",
-};
-
-/* =======================
-   Pure helpers — module-level, never recreated
-======================= */
-
-const findIntentFromText = (text) => {
-  const lower = text.toLowerCase();
-  for (const key in keywordMap) {
-    if (lower.includes(key)) return keywordMap[key];
-  }
-  return null;
-};
-
-const looksLikeSkill = (text) => {
-  const cleaned = text.trim().toLowerCase();
-  return (
-    cleaned.split(" ").length <= 2 &&
-    /^[a-zA-Z]+$/.test(cleaned.replace(" ", ""))
-  );
-};
-
-/* =======================
-   COMPONENT
-======================= */
+// Assuming backend runs on the same origin or we have a proxy:
+const AI_CHAT_API_END_POINT = "http://localhost:8000/api/ai-chat";
 
 const AIChatWidget = () => {
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const { user } = useSelector((store) => store.auth);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [inputVal, setInputVal] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
+
   const messagesEndRef = useRef(null);
 
-  const [chat, setChat] = useState([
-    {
-      sender: "bot",
-      text: knowledge.start.text,
-      options: knowledge.start.options,
-    },
-  ]);
-
-  /* Auto-scroll — only fire when chat or isTyping change */
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chat, isTyping]);
+  };
 
-  /* Stable handler — useCallback prevents recreation on every render */
-  const sendMessage = useCallback((text) => {
-    if (!text.trim()) return;
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isOpen]);
 
-    setIsTyping(true);
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!inputVal.trim()) return;
 
-    // Clear old options
-    setChat((prev) =>
-      prev.map((m) => (m.sender === "bot" ? { ...m, options: [] } : m))
-    );
+    const userMessage = inputVal;
+    setInputVal("");
 
-    setChat((prev) => [...prev, { sender: "user", text }]);
-    setMessage("");
+    // Add user message to local state immediately
+    setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+    setLoading(true);
 
-    setTimeout(() => {
-      let data = knowledge[text];
+    try {
+      const res = await axios.post(
+        `${AI_CHAT_API_END_POINT}/message`,
+        { message: userMessage, sessionId },
+        { withCredentials: true }
+      );
 
-      if (!data) {
-        const intentQuestion = findIntentFromText(text);
-        if (intentQuestion) {
-          data = knowledge[intentQuestion];
-        } else if (looksLikeSkill(text)) {
-          data = knowledge["How can I improve my skills?"];
-        } else {
-          data = knowledge.fallback;
+      if (res.data.success) {
+        setMessages((prev) => [...prev, { role: "assistant", content: res.data.reply }]);
+        if (res.data.sessionId) {
+          setSessionId(res.data.sessionId);
         }
       }
-
-      setChat((prev) => [
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch response from AI. Please try again.");
+      setMessages((prev) => [
         ...prev,
-        {
-          sender: "bot",
-          text: data.text,
-          options: data.options,
-        },
+        { role: "assistant", content: "Sorry, I encountered an error. Please try again." }
       ]);
-
-      setIsTyping(false);
-    }, 700);
-  }, []);
-
-  const toggleOpen = useCallback(() => setOpen((p) => !p), []);
-  const handleClose = useCallback(() => setOpen(false), []);
-  const handleInputChange = useCallback((e) => setMessage(e.target.value), []);
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === "Enter") sendMessage(message);
-    },
-    [message, sendMessage]
-  );
-  const handleSend = useCallback(() => sendMessage(message), [message, sendMessage]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <>
-      {/* FLOATING BUTTON */}
-      <button
-        onClick={toggleOpen}
-        className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2 px-5 py-3 rounded-full 
-        bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-xl hover:scale-105 transition"
-      >
-        ✨ <span className="hidden sm:block font-semibold">Career Assistant</span>
-      </button>
+    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col items-end">
+      {/* Search Toggle Button */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-4 rounded-full shadow-2xl hover:scale-105 transition-transform flex items-center justify-center gap-2 relative group"
+        >
+          <Bot className="w-6 h-6" />
+          <span className="font-semibold leading-none">AI Assistant</span>
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gray-700 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-gray-800"></span>
+          </span>
+        </button>
+      )}
 
-      {/* CHAT BOX */}
+      {/* Chat Window */}
       <AnimatePresence>
-        {open && (
+        {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed bottom-24 right-6 z-[9999] w-[360px] max-w-[95vw]
-            h-[480px] sm:h-[500px] bg-white rounded-2xl shadow-2xl flex flex-col"
+            className="bg-white border border-gray-100 shadow-2xl rounded-2xl w-[90vw] sm:w-96 md:w-[420px] h-[500px] max-h-[85vh] flex flex-col overflow-hidden"
           >
-            {/* HEADER */}
-            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex justify-between rounded-t-2xl">
-              <div>
-                <h3 className="font-semibold">Jobvista</h3>
-                <p className="text-xs opacity-90">Career Assistant</p>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-purple-600 to-pink-500 text-white p-4 flex items-center justify-between text-white shadow-md z-10">
+              <div className="flex items-center gap-3">
+                <div className="bg-white/20 p-2 rounded-lg">
+                  <Bot className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg leading-tight">Jobvista Copilot</h3>
+                  <p className="text-xs text-purple-100 font-medium tracking-wide flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-green-400 inline-block animate-pulse"></span>
+                    AI Online
+                  </p>
+                </div>
               </div>
-              <button onClick={handleClose} aria-label="Close chat">✕</button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="text-white hover:bg-white/20 p-2 rounded-full transition-colors focus:outline-none"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* MESSAGES */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-              {chat.map((c, i) => (
-                <div key={i}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`max-w-[80%] px-3 py-2 rounded-xl text-sm ${c.sender === "user"
-                        ? "ml-auto bg-purple-600 text-white"
-                        : "bg-white border"
+            {/* Messages Area */}
+            <div className="flex-1 p-4 overflow-y-auto bg-gray-50/50 flex flex-col gap-4 scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-transparent">
+
+              {/* Welcome/Empty State Message */}
+              {messages.length === 0 && (
+                <div className="flex flex-col items-center justify-center h-full text-center space-y-4 px-4 text-gray-500 mt-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center shadow-inner">
+                    <MessageSquare className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-semibold text-gray-800 text-lg">
+                      {user ? `Hello, ${user?.fullname?.split(" ")[0]}!` : "Hello there!"}
+                    </p>
+                    <p className="text-sm leading-relaxed">
+                      {user
+                        ? "I'm your AI career assistant powered by Groq. Ask me about your skill gaps, resume formatting, or interview prep."
+                        : "I'm Jobvista's AI Copilot. Please log in to start chatting about your career and job matching!"}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Message Thread */}
+              {messages.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                >
+                  {msg.role === "assistant" && (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-1">
+                      <Bot className="w-5 h-5 text-white" />
+                    </div>
+                  )}
+
+                  <div
+                    className={`max-w-[80%] px-4 py-3 text-sm shadow-sm ${msg.role === "user"
+                      ? "bg-gradient-to-r from-purple-600 to-pink-500 text-white text-white rounded-2xl rounded-tr-sm"
+                      : "bg-white border border-gray-100 text-gray-800 rounded-2xl rounded-tl-sm"
                       }`}
                   >
-                    {c.text}
-                  </motion.div>
+                    {/* Render Markdown-like text cleanly using pre-wrap */}
+                    <p style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>{msg.content}</p>
+                  </div>
 
-                  {c.sender === "bot" && c.options?.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {c.options.map((opt, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => sendMessage(opt)}
-                          className="block w-fit text-sm px-3 py-2 rounded-xl 
-                          bg-purple-100 text-purple-700 hover:bg-purple-200"
-                        >
-                          {opt}
-                        </button>
-                      ))}
+                  {msg.role === "user" && (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center shrink-0 shadow-sm border border-gray-300 mt-1">
+                      <User2 className="w-5 h-5 text-gray-600" />
                     </div>
                   )}
                 </div>
               ))}
 
-              {isTyping && (
-                <div className="text-xs text-gray-500 italic">
-                  Jobvista Assistant is typing…
+              {/* Loading Indicator */}
+              {loading && (
+                <div className="flex gap-3 justify-start">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-pink-500 text-white flex items-center justify-center shrink-0 shadow-sm mt-1">
+                    <Bot className="w-5 h-5 text-white" />
+                  </div>
+                  <div className="bg-white border border-gray-100 rounded-2xl rounded-tl-sm px-4 py-4 flex items-center gap-1 shadow-sm">
+                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                    <span className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></span>
+                  </div>
                 </div>
               )}
-
               <div ref={messagesEndRef} />
             </div>
 
-            {/* INPUT */}
-            <div className="p-3 border-t flex gap-2">
-              <input
-                value={message}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Type or choose an option..."
-                disabled={isTyping}
-                className="flex-1 border rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            {/* Input Area */}
+            <form onSubmit={handleSendMessage} className="p-3 bg-white border-t border-gray-100 flex gap-2 w-full">
+              <Input
+                value={inputVal}
+                onChange={(e) => setInputVal(e.target.value)}
+                placeholder="Ask your AI Copilot..."
+                className="flex-[1_1_100%] focus-visible:ring-gray-800 rounded-xl bg-gray-50 border-gray-200"
+                disabled={loading}
               />
-              <button
-                onClick={handleSend}
-                disabled={isTyping}
-                className="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 rounded-xl text-sm"
+              <Button
+                type="submit"
+                disabled={!inputVal.trim() || loading}
+                className="flex-none bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:opacity-90 rounded-xl shadow-md w-12 px-0 flex items-center justify-center transition-transform active:scale-95"
               >
-                Send
-              </button>
-            </div>
+                <Send className="w-5 h-5" />
+              </Button>
+            </form>
+
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 };
 
