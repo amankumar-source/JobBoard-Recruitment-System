@@ -8,6 +8,8 @@ import { setSingleJob } from "@/redux/jobSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { Copy } from "lucide-react";
+import Spinner from "./shared/Spinner";
 
 const JobDescription = () => {
   const { singleJob } = useSelector((store) => store.job);
@@ -23,6 +25,7 @@ const JobDescription = () => {
   );
 
   const [isApplied, setIsApplied] = useState(isInitiallyApplied);
+  const [loading, setLoading] = useState(true);
 
   const { id: jobId } = useParams();
   const dispatch = useDispatch();
@@ -56,6 +59,7 @@ const JobDescription = () => {
   useEffect(() => {
     const fetchSingleJob = async () => {
       try {
+        setLoading(true);
         const res = await axios.get(`${JOB_API_END_POINT}/get/${jobId}`, {
           withCredentials: true,
         });
@@ -69,6 +73,8 @@ const JobDescription = () => {
         }
       } catch (error) {
         void error;
+      } finally {
+        setLoading(false);
       }
     };
     fetchSingleJob();
@@ -81,6 +87,13 @@ const JobDescription = () => {
       (new Date() - new Date(singleJob.createdAt)) / (1000 * 60 * 60 * 24)
     );
   }, [singleJob?.createdAt]);
+
+  const copyLinkHandler = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast.success("Link copied");
+  };
+
+  if (loading) return <Spinner />;
 
   return (
     <motion.div
@@ -142,7 +155,16 @@ const JobDescription = () => {
                 </div>
               </div>
 
-              <Button
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  onClick={copyLinkHandler}
+                  variant="outline"
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl border-purple-200 text-purple-700 hover:bg-purple-50 flex items-center gap-2"
+                >
+                  <Copy className="w-4 h-4" />
+                  Copy Link
+                </Button>
+                <Button
                 onClick={isApplied ? undefined : applyJobHandler}
                 disabled={isApplied}
                 className={`w-full sm:w-auto px-6 py-3 rounded-xl text-white ${isApplied
@@ -152,6 +174,7 @@ const JobDescription = () => {
               >
                 {isApplied ? "Already Applied" : "Apply Now"}
               </Button>
+            </div>
             </div>
           </div>
         </div>
@@ -183,7 +206,7 @@ const JobDescription = () => {
           <h2 className="text-lg font-semibold text-gray-900 mb-3">
             Job Description
           </h2>
-          <p className="text-gray-700 leading-relaxed text-sm sm:text-base">
+          <p className="text-gray-700 leading-relaxed text-sm sm:text-base break-words">
             {singleJob?.description}
           </p>
         </div>

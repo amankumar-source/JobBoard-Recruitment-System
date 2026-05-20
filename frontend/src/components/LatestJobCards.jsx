@@ -12,7 +12,7 @@ const LatestJobCards = ({ job }) => {
   return (
     <motion.div
       whileHover={{ y: -8 }}
-      onClick={() => navigate(`/job/${job._id}`)} // Uses correct job._id
+      onClick={() => navigate(`/job/${job?._id}`)} // Uses correct job?._id
       className="group relative p-6 rounded-2xl bg-white border border-gray-200 shadow-lg hover:shadow-2xl cursor-pointer overflow-hidden transition-all duration-400"
     >
       {/* Rest of your beautiful design */}

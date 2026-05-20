@@ -52,6 +52,7 @@ export const postJob = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.error("Error in postJob:", error);
     return res.status(500).json({ message: "Server error.", success: false });
   }
 };
@@ -90,6 +91,7 @@ export const getAllJobs = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.error("Error in getAllJobs:", error);
     return res.status(500).json({ message: "Server error.", success: false });
   }
 };
@@ -112,6 +114,10 @@ export const getJobById = async (req, res) => {
 
     return res.status(200).json({ job, success: true });
   } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid job ID.", success: false });
+    }
+    console.error("Error in getJobById:", error);
     return res.status(500).json({ message: "Server error.", success: false });
   }
 };
@@ -139,6 +145,7 @@ export const getAdminJobs = async (req, res) => {
       success: true,
     });
   } catch (error) {
+    console.error("Error in getAdminJobs:", error);
     return res.status(500).json({ message: "Server error.", success: false });
   }
 };

@@ -72,6 +72,7 @@ export const analyzeSkillGap = async (req, res) => {
         });
 
     } catch (error) {
+        console.error("Error in analyzeSkillGap:", error);
         console.error("Skill Gap Analysis Error:", error);
         return res.status(500).json({
             message: "Internal server error during analysis",
@@ -102,6 +103,7 @@ export const getAnalysisResult = async (req, res) => {
             roadmap
         });
     } catch (error) {
+        console.error("Error in getAnalysisHistory:", error);
         console.error(error);
         return res.status(500).json({ message: "Internal server error", success: false });
     }
@@ -118,6 +120,7 @@ export const getUserAnalyses = async (req, res) => {
             analyses
         });
     } catch (error) {
+        console.error("Error in getAnalysisById:", error);
         console.error(error);
         return res.status(500).json({ message: "Internal server error", success: false });
     }

@@ -8,9 +8,10 @@ import { useNavigate } from "react-router-dom";
 import useGetAllCompanies from "@/hooks/useGetAllCompanies";
 import { useDispatch } from "react-redux";
 import { setSearchCompanyByText } from "@/redux/companySlice";
+import Spinner from "../shared/Spinner";
 
 const Companies = () => {
-  useGetAllCompanies();
+  const { loading } = useGetAllCompanies();
   const [input, setInput] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ const Companies = () => {
           </Button>
         </div>
 
-        <CompaniesTable />
+        {loading ? <Spinner /> : <CompaniesTable />}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import axios from "axios";
 import { USER_API_END_POINT } from "@/utils/constant";
 import { setUser } from "@/redux/authSlice";
 import { toast } from "sonner";
+import NotificationBell from "../NotificationBell";
 
 const Navbar = () => {
   const { user } = useSelector((store) => store.auth);
@@ -98,15 +99,17 @@ const Navbar = () => {
               </Link>
             </div>
           ) : (
-            <Popover>
-              <PopoverTrigger asChild>
+            <div className="flex items-center gap-4">
+              <NotificationBell />
+              <Popover>
+                <PopoverTrigger asChild>
                 <Avatar className="cursor-pointer ring-4 ring-purple-100 hover:ring-purple-200 transition-all">
                   <AvatarImage
                     src={user?.profile?.profilePhoto}
                     alt={user?.fullname}
                   />
                   <AvatarFallback className="bg-gradient-to-br from-purple-500 to-pink-500 text-white font-bold">
-                    {user?.fullname?.charAt(0).toUpperCase()}
+                    {user?.fullname?.charAt(0)?.toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
               </PopoverTrigger>
@@ -150,6 +153,7 @@ const Navbar = () => {
                 </div>
               </PopoverContent>
             </Popover>
+           </div>
           )}
         </div>
 
@@ -164,17 +168,20 @@ const Navbar = () => {
           )}
 
           {user && (
-            <Link to="/profile">
-              <Avatar className="w-9 h-9 ring-2 ring-purple-300 cursor-pointer">
-                <AvatarImage
-                  src={user?.profile?.profilePhoto}
-                  alt={user?.fullname}
-                />
-                <AvatarFallback className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold">
-                  {user?.fullname?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <Link to="/profile">
+                <Avatar className="w-9 h-9 ring-2 ring-purple-300 cursor-pointer">
+                  <AvatarImage
+                    src={user?.profile?.profilePhoto}
+                    alt={user?.fullname}
+                  />
+                  <AvatarFallback className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-bold">
+                    {user?.fullname?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
+            </div>
           )}
 
           {/* Hamburger (ONLY menu controller) */}

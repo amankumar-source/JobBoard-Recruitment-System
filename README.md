@@ -75,28 +75,38 @@ cd jobvista-pro
 
 
 
-2️⃣ Backend Setup
-
-cd server
+### 2️⃣ Backend Setup
+```bash
+cd backend
 npm install
-npm start
-
-Create a .env file in the server folder
-
-PORT=5000
+npm run dev
+```
+Create a `.env` file in the `backend` folder:
+```env
+PORT=3000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+SECRET_KEY=your_secret_key
+EMAIL_USER=your_email
+EMAIL_PASS=your_email_password
+```
 
-
- 3️⃣ Frontend Setup
-
- cd client
+### 3️⃣ Frontend Setup
+```bash
+cd frontend
 npm install
-npm start
+npm run dev
+```
+Create a `.env` file in the `frontend` folder:
+```env
+VITE_FIREBASE_API_KEY=your_key
+VITE_FIREBASE_AUTH_DOMAIN=your_domain
+VITE_FIREBASE_PROJECT_ID=your_id
+VITE_FIREBASE_STORAGE_BUCKET=your_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_id
+VITE_FIREBASE_APP_ID=your_id
+```
 
-
-
-📌 Future Enhancements
+## 📌 Future Enhancements
 
 Resume download tracking
 

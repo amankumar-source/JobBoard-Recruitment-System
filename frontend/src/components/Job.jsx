@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 // Pure utility — defined outside component so it's not recreated on every render
 const getDaysAgo = (mongodbTime) => {
+  if (!mongodbTime) return 0;
   const createdAt = new Date(mongodbTime);
   const timeDifference = Date.now() - createdAt.getTime();
   return Math.floor(timeDifference / (1000 * 24 * 60 * 60));

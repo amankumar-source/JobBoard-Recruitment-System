@@ -12,6 +12,9 @@ import { useDispatch, useSelector } from "react-redux";
 import { setLoading } from "@/redux/authSlice";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { setUser } from "@/redux/authSlice";
+import { auth, googleProvider } from "@/utils/firebase";
+import { signInWithPopup } from "firebase/auth";
 
 // ✅ Validation regex
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -94,6 +97,41 @@ const Signup = () => {
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Signup failed");
+    } finally {
+      dispatch(setLoading(false));
+    }
+  };
+
+  const googleSignupHandler = async () => {
+    if (!input.role) {
+      toast.error("Please select a role before continuing with Google.");
+      return;
+    }
+
+    try {
+      dispatch(setLoading(true));
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      const payload = {
+        fullname: user.displayName,
+        email: user.email,
+        profilePhoto: user.photoURL,
+        role: input.role,
+      };
+
+      const res = await axios.post(`${USER_API_END_POINT}/google`, payload, {
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+      });
+
+      if (res.data.success) {
+        dispatch(setUser(res.data.user));
+        navigate("/");
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Google Sign-Up failed.");
     } finally {
       dispatch(setLoading(false));
     }
@@ -272,6 +310,23 @@ const Signup = () => {
                   Signup →
                 </Button>
               )}
+
+              {/* Divider */}
+              <div className="flex items-center my-4">
+                <div className="flex-grow border-t border-gray-300"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-500 text-sm">or</span>
+                <div className="flex-grow border-t border-gray-300"></div>
+              </div>
+
+              {/* Google Button */}
+              <Button
+                type="button"
+                onClick={googleSignupHandler}
+                className="w-full h-12 text-lg font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl shadow-sm flex items-center justify-center gap-3 transition"
+              >
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5"/>
+                Continue with Google
+              </Button>
 
               {/* Login Link */}
               <p className="text-center text-sm text-gray-600 mt-6">

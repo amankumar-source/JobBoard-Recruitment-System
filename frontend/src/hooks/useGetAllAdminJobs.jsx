@@ -1,10 +1,11 @@
 import { setAllAdminJobs } from '@/redux/jobSlice';
 import { JOB_API_END_POINT } from '@/utils/constant';
 import axios from 'axios';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 const useGetAllAdminJobs = () => {
+    const [loading, setLoading] = useState(true);
     const dispatch = useDispatch();
     useEffect(() => {
         const fetchAllAdminJobs = async () => {
@@ -15,10 +16,13 @@ const useGetAllAdminJobs = () => {
                 }
             } catch (error) {
                 void error;
+            } finally {
+                setLoading(false);
             }
         };
         fetchAllAdminJobs();
     }, [dispatch]);
+    return { loading };
 };
 
 export default useGetAllAdminJobs;

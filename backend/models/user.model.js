@@ -12,11 +12,15 @@ const userSchema = new mongoose.Schema({
     },
     phoneNumber: {
         type: Number,
-        required: true
+        required: function() { return this.provider === 'local'; }
     },
     password:{
         type:String,
-        required:true,
+        required: function() { return this.provider === 'local'; },
+    },
+    provider: {
+        type: String,
+        default: 'local'
     },
     role:{
         type:String,

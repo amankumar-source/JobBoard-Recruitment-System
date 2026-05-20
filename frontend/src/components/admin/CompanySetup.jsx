@@ -71,14 +71,24 @@ const CompanySetup = () => {
   };
 
   useEffect(() => {
-    setInput({
-      name: singleCompany.name || "",
-      description: singleCompany.description || "",
-      website: singleCompany.website || "",
-      location: singleCompany.location || "",
-      file: null,
-    });
+    if (singleCompany) {
+      setInput({
+        name: singleCompany?.name || "",
+        description: singleCompany?.description || "",
+        website: singleCompany?.website || "",
+        location: singleCompany?.location || "",
+        file: null,
+      });
+    }
   }, [singleCompany]);
+
+  if (!singleCompany) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-600 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div>

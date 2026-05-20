@@ -1,20 +1,56 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Navbar from "./shared/Navbar";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Button } from "./ui/button";
-import { Contact, Mail, Pen, FileText } from "lucide-react";
+import { Contact, Mail, Pen, FileText, Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Label } from "./ui/label";
 import AppliedJobTable from "./AppliedJobTable";
 import UpdateProfileDialog from "./UpdateProfileDialog";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import useGetAppliedJobs from "@/hooks/useGetAppliedJobs";
 import { motion } from "framer-motion";
+import axios from "axios";
+import { USER_API_END_POINT } from "@/utils/constant";
+import { setUser } from "@/redux/authSlice";
+import { toast } from "sonner";
 
 const Profile = () => {
   useGetAppliedJobs();
   const [open, setOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const photoInputRef = useRef(null);
+
   const { user } = useSelector((store) => store.auth);
+  const dispatch = useDispatch();
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await axios.post(`${USER_API_END_POINT}/profile/photo/update`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+
+      if (res.data.success) {
+        dispatch(setUser(res.data.user));
+        toast.success(res.data.message || "Profile photo updated successfully!");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to update profile photo");
+    } finally {
+      setIsUploading(false);
+      // Reset input so the same file can be selected again if needed
+      if (photoInputRef.current) photoInputRef.current.value = "";
+    }
+  };
 
   const profilePhoto =
     user?.profile?.profilePhoto ||
@@ -34,16 +70,40 @@ const Profile = () => {
         <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
             <div className="flex items-center gap-6">
-              <Avatar className="h-28 w-28 ring-4 ring-purple-200">
-                <AvatarImage
-                  src={profilePhoto}
-                  alt={user?.fullname}
-                  className="object-cover"
+              <div 
+                className="relative cursor-pointer group rounded-full" 
+                onClick={() => photoInputRef.current?.click()}
+                title="Change Profile Photo"
+              >
+                <Avatar className="h-28 w-28 ring-4 ring-purple-200 transition-opacity group-hover:opacity-80 relative z-0">
+                  <AvatarImage
+                    src={profilePhoto}
+                    alt={user?.fullname}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-3xl font-bold">
+                    {user?.fullname?.charAt(0)?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                
+                {/* Overlay Icon visible on hover */}
+                <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  {isUploading ? (
+                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                  ) : (
+                    <Pen className="h-6 w-6 text-white" />
+                  )}
+                </div>
+
+                {/* Hidden File Input */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={photoInputRef}
+                  className="hidden"
+                  onChange={handlePhotoUpload}
                 />
-                <AvatarFallback className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-3xl font-bold">
-                  {user?.fullname?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              </div>
 
               <div>
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -142,7 +202,6 @@ const Profile = () => {
           <AppliedJobTable />
         </div>
       </div>
-
       <UpdateProfileDialog open={open} setOpen={setOpen} />
     </motion.div>
   );

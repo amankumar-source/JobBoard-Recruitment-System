@@ -31,6 +31,7 @@ export const registerCompany = async (req, res) => {
             success: true,
         });
     } catch (error) {
+        console.error("Error in registerCompany:", error);
         return res.status(500).json({ message: "Server error.", success: false });
     }
 };
@@ -44,6 +45,7 @@ export const getCompany = async (req, res) => {
         }
         return res.status(200).json({ companies, success: true });
     } catch (error) {
+        console.error("Error in getCompany:", error);
         return res.status(500).json({ message: "Server error.", success: false });
     }
 };
@@ -56,15 +58,30 @@ export const getCompanyById = async (req, res) => {
             return res.status(404).json({ message: "Company not found.", success: false });
         }
         return res.status(200).json({ company, success: true });
-    } catch (error) {
-        return res.status(500).json({ message: "Server error.", success: false });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({ message: "Invalid company ID.", success: false });
     }
+    console.error("Error in getCompanyById:", error);
+    return res.status(500).json({ message: "Server error.", success: false });
+  }
 };
 
 export const updateCompany = async (req, res) => {
     try {
         const { name, description, website, location } = req.body;
         const file = req.file;
+
+        // Check if another company already has this name
+        if (name) {
+            const existingCompany = await Company.findOne({ name }).lean();
+            if (existingCompany && existingCompany._id.toString() !== req.params.id) {
+                return res.status(400).json({
+                    message: "Company name already exists.",
+                    success: false,
+                });
+            }
+        }
 
         const updateData = { name, description, website, location };
 
@@ -89,6 +106,7 @@ export const updateCompany = async (req, res) => {
             success: true,
         });
     } catch (error) {
+        console.error("Error in updateCompany:", error);
         return res.status(500).json({ message: "Server error.", success: false });
     }
 };

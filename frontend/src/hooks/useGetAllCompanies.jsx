@@ -1,10 +1,11 @@
 import { setCompanies } from '@/redux/companySlice';
 import { COMPANY_API_END_POINT } from '@/utils/constant';
 import axios from 'axios';
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 const useGetAllCompanies = () => {
+    const [loading, setLoading] = useState(true);
     const dispatch = useDispatch();
     useEffect(() => {
         const fetchCompanies = async () => {
@@ -16,10 +17,13 @@ const useGetAllCompanies = () => {
             } catch (error) {
                 // Silently ignore — network errors are user-facing via UI state
                 void error;
+            } finally {
+                setLoading(false);
             }
         };
         fetchCompanies();
     }, [dispatch]);
+    return { loading };
 };
 
 export default useGetAllCompanies;

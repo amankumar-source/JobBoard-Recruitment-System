@@ -8,9 +8,10 @@ import { useDispatch } from "react-redux";
 import AdminJobsTable from "./AdminJobsTable";
 import useGetAllAdminJobs from "@/hooks/useGetAllAdminJobs";
 import { setSearchJobByText } from "@/redux/jobSlice";
+import Spinner from "../shared/Spinner";
 
 const AdminJobs = () => {
-  useGetAllAdminJobs();
+  const { loading } = useGetAllAdminJobs();
   const [input, setInput] = useState("");
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -40,7 +41,7 @@ const AdminJobs = () => {
           </Button>
         </div>
 
-        <AdminJobsTable />
+        {loading ? <Spinner /> : <AdminJobsTable />}
       </div>
     </div>
   );

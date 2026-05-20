@@ -10,6 +10,7 @@ import applicationRoute from "./routes/application.route.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import skillGapRoute from "./routes/skillGap.route.js";
 import aiChatRoute from "./routes/aiChat.route.js";
+import notificationRoute from "./routes/notification.route.js";
 
 dotenv.config({});
 
@@ -41,6 +42,7 @@ app.use("/api/v1/application", applicationRoute);
 app.use("/api/ai", aiRoutes);
 app.use("/api/skill-gap", skillGapRoute);
 app.use("/api/ai-chat", aiChatRoute);
+app.use("/api/v1/notification", notificationRoute);
 
 // ─── Health check ─────────────────────────────────────────────
 app.get("/health", (_req, res) => res.status(200).json({ status: "ok" }));

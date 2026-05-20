@@ -8,15 +8,11 @@ const UserProtectedRoute = ({ children }) => {
 
     useEffect(() => {
         if (!user) {
-            navigate("/login");
+            navigate("/login", { replace: true });
         }
     }, [user, navigate]);
 
-    return (
-        <>
-            {user ? children : null}
-        </>
-    );
+    return user ? children : null;
 };
 
 export default UserProtectedRoute;

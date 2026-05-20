@@ -1,6 +1,7 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { lazy, Suspense } from "react";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Eagerly load core pages (always needed)
 import Home from "./components/Home";
@@ -114,12 +115,14 @@ const appRouter = createBrowserRouter([
 
 function App() {
   return (
-    <div>
-      <Suspense fallback={<PageLoader />}>
-        <RouterProvider router={appRouter} />
-        <AIChatWidget />
-      </Suspense>
-    </div>
+    <ErrorBoundary>
+      <div>
+        <Suspense fallback={<PageLoader />}>
+          <RouterProvider router={appRouter} />
+          <AIChatWidget />
+        </Suspense>
+      </div>
+    </ErrorBoundary>
   );
 }
 
